@@ -30,7 +30,6 @@ void setup() {
   pinMode(ENABLE_PIN, OUTPUT);
 
   stepperX.setMaxSpeed(SPEED); stepperY.setMaxSpeed(SPEED); 
-  stepperX.setAcceleration(150); stepperY.setAcceleration(150); 
 }
 
 // NEUE, ROBUSTE LESEFUNKTION
