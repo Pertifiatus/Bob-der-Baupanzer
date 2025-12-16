@@ -4,7 +4,7 @@
 // X-Achse
 const int X_STEP_PIN = 2;
 const int X_DIR_PIN  = 5;
-
+//Trst
 // Y-Achse
 const int Y_STEP_PIN = 3;
 const int Y_DIR_PIN  = 6;
