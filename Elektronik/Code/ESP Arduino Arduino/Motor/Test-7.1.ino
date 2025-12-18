@@ -1,7 +1,7 @@
 #include <AccelStepper.h>
 
 #define ENABLE_PIN 8
-#define SPEED 200   
+#define SPEED 1300    //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning 
 #define MAX_CHANNELS 6
 #define BUFFER_SIZE 48  // Neu: Sicherer Puffer für 6 Kanäle
 #define START_TOKEN '!' // Starttoken
