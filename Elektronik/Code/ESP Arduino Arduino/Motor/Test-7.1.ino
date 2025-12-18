@@ -100,9 +100,10 @@ void ChannelOUTPUT(){
           } else {
             Drive = 0;
           }
-          if(Drive==1){  if (c[5] == 0) {
-            if (c[1] != 0 || c[2] != 0) {
-              EN = 0; // Wenn c[1] oder c[2] aktiv sind, Motor AN
+          if(Drive==1){  
+            if (c[5] == 0) {
+              if (c[1] != 0 || c[2] != 0) {
+                EN = 0; // Wenn c[1] oder c[2] aktiv sind, Motor AN
             } else {
               EN = 1; // Wenn c[3]=0 und c[1]/c[2] = 0, Motor AUS
         }
@@ -112,17 +113,16 @@ void ChannelOUTPUT(){
 }
 
 void updateSteppers() {
-  // Stepper-Treiber aktivieren/deaktivieren 
+  
   if(Drive==1){
-  // Setzt die Geschwindigkeit
-  stepperX.setSpeed(c[1]); 
-  stepperY.setSpeed(c[2]); 
-  digitalWrite(ENABLE_PIN, EN);
+    stepperX.setSpeed(c[1]); 
+    stepperY.setSpeed(c[2]); 
+    digitalWrite(ENABLE_PIN, EN);
   }
   if(Drive==0){
-  stepperX.setSpeed(0); 
-  stepperY.setSpeed(0); 
-  digitalWrite(ENABLE_PIN, EN);
+    stepperX.setSpeed(0); 
+    stepperY.setSpeed(0); 
+    digitalWrite(ENABLE_PIN, EN);
   }
   stepperX.runSpeed();
   stepperY.runSpeed();
