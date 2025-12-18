@@ -8,7 +8,7 @@
 
 int c[MAX_CHANNELS + 1] = {0, 0, 0, 0, 0, 0, 0}; 
 int EN = 1; // 0=Enabled, 1=Disabled
-int DR =0; // Drive Status 
+int Drive =0; // Drive Status 
 
 char inputBuffer[BUFFER_SIZE];
 byte bufferIndex = 0;
@@ -19,8 +19,7 @@ AccelStepper stepperY(AccelStepper::DRIVER, 3, 6);
 AccelStepper stepperZ(AccelStepper::DRIVER, 4, 7);
 
 int applyDeadzone(int value, int dz) {
-  return (abs(value) < dz) ? 0 : value;
-}
+  return (abs(value) < dz) ? 0 : value;}
 
 void setup() {
   
@@ -84,6 +83,7 @@ void loop() {
   updateSteppers();
 
   ChannelOUTPUT();
+
 }
 
 void ChannelOUTPUT(){
@@ -97,11 +97,11 @@ void ChannelOUTPUT(){
           }
 
           if (c[4] < 0) {
-            DR = 1;
+            Drive = 1;
           } else {
-            DR = 0;
+            Drive = 0;
           }
-          if(DR==1){  if (c[3] == 0) {
+          if(Drive==1){  if (c[3] == 0) {
             if (c[1] != 0 || c[2] != 0) {
               EN = 0; // Wenn c[1] oder c[2] aktiv sind, Motor AN
             } else {
@@ -114,21 +114,18 @@ void ChannelOUTPUT(){
 
 void updateSteppers() {
   // Stepper-Treiber aktivieren/deaktivieren 
-  if(DR==1){
+  if(Drive==1){
   // Setzt die Geschwindigkeit
   stepperX.setSpeed(c[1]); 
   stepperY.setSpeed(c[2]); 
   digitalWrite(ENABLE_PIN, EN);
   }
-  if(DR==0){
+  if(Drive==0){
   stepperX.setSpeed(0); 
   stepperY.setSpeed(0); 
   digitalWrite(ENABLE_PIN, EN);
   }
-  // Führt den nächsten Schritt aus (zeitkritische Funktion!)
   stepperX.runSpeed();
   stepperY.runSpeed();
-  // stepperZ.runSpeed(); // Z-Achse entfernt
+  stepperZ.runSpeed();
 }
-
-
