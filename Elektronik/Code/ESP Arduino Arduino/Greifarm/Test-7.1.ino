@@ -61,12 +61,8 @@ void readSerial() {
           c[2] = map(c[2], -1000, 1000, -SPEED, SPEED);
           c[2] = applyDeadzone(t2, 80); 
           
-          
-          c[7] = t7;
           c[6] = t6; 
-          
-          // Logik für Enable (EN) Pin basierend auf c[5] und c[1]/c[2] (wie Original-Code)
-
+          c[7] = t7;
         } 
         
         readingActive = false; 
