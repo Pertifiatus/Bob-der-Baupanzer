@@ -59,7 +59,6 @@ void readSerial() {
           c[2] = applyDeadzone(t2, 80); 
           c[2] = map(c[2], -1000, 1000, -SPEED, SPEED);
 
-          // --- Control (c[3]): Dritter geparster Wert ---
           c[5] = t5;
           c[6] = t6;
         } 
