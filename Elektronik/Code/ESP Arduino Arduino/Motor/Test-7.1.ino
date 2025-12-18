@@ -61,7 +61,7 @@ void readSerial() {
 
           // --- Control (c[3]): Dritter geparster Wert ---
           c[5] = t5;
-          c[4] = t6;
+          c[6] = t6;
         } 
         
         readingActive = false; 
@@ -96,7 +96,7 @@ void ChannelOUTPUT(){
             EN = 0; // Wenn c[3] = 1, wird EN auf 0 gesetzt (Motor AN)
           }
 
-          if (c[4] < 0) {
+          if (c[6] < 0) {
             Drive = 1;
           } else {
             Drive = 0;
