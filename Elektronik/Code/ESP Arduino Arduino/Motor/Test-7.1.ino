@@ -60,7 +60,7 @@ void readSerial() {
           c[2] = map(c[2], -1000, 1000, -SPEED, SPEED);
 
           // --- Control (c[3]): Dritter geparster Wert ---
-          c[3] = t5;
+          c[5] = t5;
           c[4] = t6;
         } 
         
@@ -89,10 +89,10 @@ void loop() {
 void ChannelOUTPUT(){
   
     // Logik für Enable (EN)
-          if (c[3] > 0) {
-            c[3] = 0;
+          if (c[5] > 0) {
+            c[5] = 0;
           } else {
-            c[3] = 1;
+            c[5] = 1;
             EN = 0; // Wenn c[3] = 1, wird EN auf 0 gesetzt (Motor AN)
           }
 
@@ -101,7 +101,7 @@ void ChannelOUTPUT(){
           } else {
             Drive = 0;
           }
-          if(Drive==1){  if (c[3] == 0) {
+          if(Drive==1){  if (c[5] == 0) {
             if (c[1] != 0 || c[2] != 0) {
               EN = 0; // Wenn c[1] oder c[2] aktiv sind, Motor AN
             } else {
