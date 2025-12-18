@@ -106,9 +106,9 @@ void ChannelOUTPUT(){
                 EN = 0; // Wenn die Sticks nicht center sind, Motor AN
             } else {
               EN = 1; // Wenn die Sticks Center sind, Motor AUS
-        }
-      }
-    }
+            }
+          }
+        }  
     if(c[6] > 0 & c [5] == 0){
     EN=1;
     }
