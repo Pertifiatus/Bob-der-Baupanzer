@@ -53,13 +53,13 @@ void readSerial() {
 
         if (parsed == MAX_CHANNELS) {
           // --- X-Achse (c[1]) ---
+          c[1] = applyDeadzone(t1, 80);   
           c[1] = map(c[1], -1000, 1000, -SPEED, SPEED);
-          c[1] = applyDeadzone(t1, 80); 
-          
 
+          
           // --- Y-Achse (c[2]) ---
-          c[2] = map(c[2], -1000, 1000, -SPEED, SPEED);
           c[2] = applyDeadzone(t2, 80); 
+          c[2] = map(c[2], -1000, 1000, -SPEED, SPEED);
           
           c[6] = t6; 
           c[7] = t7;
