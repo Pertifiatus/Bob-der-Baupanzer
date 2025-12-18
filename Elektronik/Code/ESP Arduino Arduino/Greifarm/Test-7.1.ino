@@ -81,11 +81,6 @@ void readSerial() {
     }
   }
 }
-
-/**
- * Aktualisiert die Stepper-Geschwindigkeit und den Enable-Pin.
- */
-
 void loop() {
   
   readSerial(); 
