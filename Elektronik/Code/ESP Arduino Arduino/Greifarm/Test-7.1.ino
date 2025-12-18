@@ -16,7 +16,7 @@ static bool readingActive = false; //Zustand für das Lesen des Start-Tokens
 
 AccelStepper stepperX(AccelStepper::DRIVER, 2, 5);
 AccelStepper stepperY(AccelStepper::DRIVER, 3, 6);
-AccelStepper stepperZ(AccelStepper::Driver, 4, 7);
+AccelStepper stepperZ(AccelStepper::DRIVER, 4, 7);
 
 int applyDeadzone(int value, int dz) {
   return (abs(value) < dz) ? 0 : value;
