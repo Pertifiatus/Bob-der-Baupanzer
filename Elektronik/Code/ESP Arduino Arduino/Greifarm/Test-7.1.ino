@@ -1,23 +1,22 @@
 #include <AccelStepper.h>
 
-#define ENABLE_PIN 8 // Enable Pin für Stepper-Treiber
-#define SPEED 1400   // Maximale Geschwindigkeit der Motoren
-#define MAX_CHANNELS 7  // <<< GEÄNDERT: Erwartet jetzt 7 Kanäle
-#define BUFFER_SIZE 48  
-#define START_TOKEN '!' 
+#define ENABLE_PIN 8
+#define SPEED 1400      // Speed... I am lightning 
+#define MAX_CHANNELS 7  // 7 Kanäle werden empfangen 
+#define BUFFER_SIZE 48  // Buffer für 6 Kanäle
+#define START_TOKEN '!' // Starttoken
 
-// c[1]=X-Speed, c[2]=Y-Speed, c[5]=Control (Jetzt der fünfte geparste Wert t5)
-// Das Array c muss auf 7 Elemente (Index 1 bis 7) vergrößert werden.
 int c[MAX_CHANNELS + 1] = {0, 0, 0, 0, 0, 0, 0, 0}; 
-int EN = 1; // Enable/Disable Status (0=Enabled, 1=Disabled)
+int EN = 1; // 0=Enabled, 1=Disabled
 int DR =0; // Drive Status 
 
 char inputBuffer[BUFFER_SIZE];
 byte bufferIndex = 0;
-static bool readingActive = false; 
+static bool readingActive = false; //Zustand für das Lesen des Start-Tokens
 
 AccelStepper stepperX(AccelStepper::DRIVER, 2, 5);
 AccelStepper stepperY(AccelStepper::DRIVER, 3, 6);
+AccelStepper stepperZ(AccelStepper::Driver, 4, 7);
 
 int applyDeadzone(int value, int dz) {
   return (abs(value) < dz) ? 0 : value;
@@ -29,11 +28,10 @@ void setup() {
 
   pinMode(ENABLE_PIN, OUTPUT);
 
-  stepperX.setMaxSpeed(SPEED); stepperY.setMaxSpeed(SPEED); 
+  stepperX.setMaxSpeed(SPEED); stepperY.setMaxSpeed(SPEED); stepperZ.setMaxSpeed(SPEED);
 }
 
-// NEUE, ROBUSTE LESEFUNKTION
-void readSerialRobust() {
+void readSerial() {
   while (Serial.available()) {
     char incoming = Serial.read();
 
@@ -48,7 +46,8 @@ void readSerialRobust() {
         inputBuffer[bufferIndex] = 0;
         
         int t1, t2, t3, t4, t5, t6, t7;
-        
+
+        // Parsen von 6 Kanälen
         int parsed = sscanf(inputBuffer, "%d,%d,%d,%d,%d,%d,%d", 
                             &t1, &t2, &t3, &t4, &t5, &t6, &t7);
 
@@ -106,6 +105,19 @@ void readSerialRobust() {
 /**
  * Aktualisiert die Stepper-Geschwindigkeit und den Enable-Pin.
  */
+
+void loop() {
+  readSerial(); 
+  updateSteppers();
+}
+
+void ChannelOUTPUT(){
+
+
+
+}
+
+
 void updateSteppers() {
   
   if(DR==1){
@@ -122,9 +134,4 @@ void updateSteppers() {
   // Führt den nächsten Schritt aus (zeitkritische Funktion!)
   stepperX.runSpeed();
   stepperY.runSpeed();
-}
-
-void loop() {
-  readSerialRobust(); 
-  updateSteppers();
 }
