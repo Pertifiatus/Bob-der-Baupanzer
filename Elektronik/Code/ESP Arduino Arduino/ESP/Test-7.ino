@@ -3,7 +3,6 @@
 HardwareSerial ArduinoMotorSerial(2); 
 HardwareSerial ArduinoGreifSerial(0); 
 
-// RX = GPIO16, TX = GPIO17
 CRSF crossfire(16, 17); 
 
 unsigned long lastSend = 0;
@@ -17,8 +16,7 @@ void setup() {
   ArduinoGreifSerial.begin(9600, SERIAL_8N1, 33, 32); // TX = 32 , RX = 33
   
   crossfire.begin();                                   // RX = 16 , TX = 17
-
-  // Serial.println("ESP32 CRSF Bridge gestartet..."); 
+ 
 }
 
 void loop() {
