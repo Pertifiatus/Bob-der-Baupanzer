@@ -128,7 +128,6 @@ void ChannelOUTPUT(){
 void updateSteppers() {
   
   if(Grab==1){
-    // Setzt die Geschwindigkeit
     stepperX.setSpeed(c[1]); 
     stepperY.setSpeed(c[2]); 
     digitalWrite(ENABLE_PIN, EN);
@@ -138,7 +137,8 @@ void updateSteppers() {
     stepperY.setSpeed(0); 
     digitalWrite(ENABLE_PIN, EN);
   }
-  // Führt den nächsten Schritt aus (zeitkritische Funktion!)
   stepperX.runSpeed();
   stepperY.runSpeed();
+  stepperZ.runSpeed();
+  
 }
