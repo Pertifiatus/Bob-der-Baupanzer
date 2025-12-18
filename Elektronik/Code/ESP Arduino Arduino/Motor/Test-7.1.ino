@@ -95,22 +95,24 @@ void ChannelOUTPUT(){
             EN = 0; // Wenn c[3] = 1, wird EN auf 0 gesetzt (Motor AN)
           }
 
-          if (c[6] < 0) {
+          if (c[6] < 0) { //Drive Action Enable/Disable
             Drive = 1;
           } else {
             Drive = 0;
           }
-          if(Drive==1){  
+          if(Drive==1){  // Arming in Drive Action
             if (c[5] == 0) {
               if (c[1] != 0 || c[2] != 0) {
-                EN = 0; // Wenn c[1] oder c[2] aktiv sind, Motor AN
+                EN = 0; // Wenn die Sticks nicht center sind, Motor AN
             } else {
-              EN = 1; // Wenn c[3]=0 und c[1]/c[2] = 0, Motor AUS
+              EN = 1; // Wenn die Sticks Center sind, Motor AUS
         }
       }
     }
-  
-}
+    if(c[6] > 0 & c [5] == 0){
+    EN=1;
+    }
+  }
 
 void updateSteppers() {
   
