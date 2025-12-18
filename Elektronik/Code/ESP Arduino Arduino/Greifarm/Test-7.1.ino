@@ -8,7 +8,7 @@
 
 int c[MAX_CHANNELS + 1] = {0, 0, 0, 0, 0, 0, 0, 0}; 
 int EN = 1; // 0=Enabled, 1=Disabled
-int DR =0; // Drive Status 
+int Grab =0; // Drive Status 
 
 char inputBuffer[BUFFER_SIZE];
 byte bufferIndex = 0;
@@ -53,40 +53,20 @@ void readSerial() {
 
         if (parsed == MAX_CHANNELS) {
           // --- X-Achse (c[1]) ---
-          c[1] = applyDeadzone(t1, 80); 
           c[1] = map(c[1], -1000, 1000, -SPEED, SPEED);
+          c[1] = applyDeadzone(t1, 80); 
+          
 
           // --- Y-Achse (c[2]) ---
-          c[2] = applyDeadzone(t2, 80); 
           c[2] = map(c[2], -1000, 1000, -SPEED, SPEED);
+          c[2] = applyDeadzone(t2, 80); 
+          
+          
           c[5] = t7;
           c[6] = t6; 
           
           // Logik für Enable (EN) Pin basierend auf c[5] und c[1]/c[2] (wie Original-Code)
-          if (c[5] > 0) {
-            c[5] = 0;
-          } else {
-            c[5] = 1;
-            EN = 0; // Wenn c[5] = 1, wird EN auf 0 gesetzt (Motor AN)
-          }
 
-          if (c[6] > 0) {
-            DR = 1;
-          } else {
-            DR = 0;
-          }
-          if(DR==1){
-            if (c[5] == 0) {
-              if (c[1] != 0 || c[2] != 0) {
-                EN = 0; // Wenn c[1] oder c[2] aktiv sind, Motor AN
-              } else {
-                EN = 1; // Wenn c[5]=0 und c[1]/c[2] = 0, Motor AUS
-              }
-            }
-          }
-          if(c[6] < 0 & c [5] == 0){
-            EN=1;
-          }
         } 
         
         readingActive = false; 
@@ -107,26 +87,53 @@ void readSerial() {
  */
 
 void loop() {
+  
   readSerial(); 
+  
   updateSteppers();
+
+  ChannelOUTPUT();
+  
 }
 
 void ChannelOUTPUT(){
 
+          if (c[5] > 0) {
+            c[5] = 0;
+          } else {
+            c[5] = 1;
+            EN = 0; // Wenn c[5] = 1, wird EN auf 0 gesetzt (Motor AN)
+          }
 
-
+          if (c[6] > 0) {
+            Grab = 1;
+          } else {
+            Grab = 0;
+          }
+          if(Grab==1){
+            if (c[5] == 0) {
+              if (c[1] != 0 || c[2] != 0) {
+                EN = 0; // Wenn c[1] oder c[2] aktiv sind, Motor AN
+              } else {
+                EN = 1; // Wenn c[5]=0 und c[1]/c[2] = 0, Motor AUS
+              }
+            }
+          }
+          if(c[6] < 0 & c [5] == 0){
+            EN=1;
+          }
 }
 
 
 void updateSteppers() {
   
-  if(DR==1){
+  if(Grab==1){
     // Setzt die Geschwindigkeit
     stepperX.setSpeed(c[1]); 
     stepperY.setSpeed(c[2]); 
     digitalWrite(ENABLE_PIN, EN);
   }
-  if(DR==0){
+  if(Grab==0){
     stepperX.setSpeed(0); 
     stepperY.setSpeed(0); 
     digitalWrite(ENABLE_PIN, EN);
