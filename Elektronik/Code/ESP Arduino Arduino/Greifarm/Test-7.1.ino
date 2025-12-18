@@ -2,13 +2,13 @@
 
 #define ENABLE_PIN 8
 #define SPEED 1400      // Speed... I am lightning 
-#define MAX_CHANNELS 7  // 7 Kanäle werden empfangen 
+#define MAX_CHANNELS 7
 #define BUFFER_SIZE 48  // Buffer für 6 Kanäle
 #define START_TOKEN '!' // Starttoken
 
 int c[MAX_CHANNELS + 1] = {0, 0, 0, 0, 0, 0, 0, 0}; 
 int EN = 1; // 0=Enabled, 1=Disabled
-int Grab =0; // Drive Status 
+int Grab =0; // Grabber Status 
 
 char inputBuffer[BUFFER_SIZE];
 byte bufferIndex = 0;
@@ -62,7 +62,7 @@ void readSerial() {
           c[2] = applyDeadzone(t2, 80); 
           
           
-          c[5] = t7;
+          c[7] = t7;
           c[6] = t6; 
           
           // Logik für Enable (EN) Pin basierend auf c[5] und c[1]/c[2] (wie Original-Code)
@@ -98,11 +98,11 @@ void loop() {
 
 void ChannelOUTPUT(){
 
-          if (c[5] > 0) {
-            c[5] = 0;
+          if (c[7] > 0) {
+            c[7] = 0;
           } else {
-            c[5] = 1;
-            EN = 0; // Wenn c[5] = 1, wird EN auf 0 gesetzt (Motor AN)
+            c[7] = 1;
+            EN = 0; // Wenn c[7] = 1, wird EN auf 0 gesetzt (Motor AN)
           }
 
           if (c[6] > 0) {
@@ -111,7 +111,7 @@ void ChannelOUTPUT(){
             Grab = 0;
           }
           if(Grab==1){
-            if (c[5] == 0) {
+            if (c[7] == 0) {
               if (c[1] != 0 || c[2] != 0) {
                 EN = 0; // Wenn c[1] oder c[2] aktiv sind, Motor AN
               } else {
@@ -119,7 +119,7 @@ void ChannelOUTPUT(){
               }
             }
           }
-          if(c[6] < 0 & c [5] == 0){
+          if(c[6] < 0 & c [7] == 0){
             EN=1;
           }
 }
