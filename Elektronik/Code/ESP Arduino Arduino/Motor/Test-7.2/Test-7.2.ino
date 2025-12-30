@@ -1,0 +1,139 @@
+#include <AccelStepper.h>
+
+#define ENABLE_PIN 8
+#define SPEED 1300  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
+#define MAX_CHANNELS 6
+#define BUFFER_SIZE 48   // Buffer für 6 Kanäle
+#define START_TOKEN '!'  // Starttoken
+
+int c[MAX_CHANNELS + 1] = { 0, 0, 0, 0, 0, 0, 0 };
+int EN = 1;     // 0=Enabled, 1=Disabled
+int Drive = 0;  // Drive Status
+
+char inputBuffer[BUFFER_SIZE];
+byte bufferIndex = 0;
+static bool readingActive = false;  // Zustand für das Lesen des Start-Tokens
+
+AccelStepper stepperX(AccelStepper::DRIVER, 2, 5);
+AccelStepper stepperY(AccelStepper::DRIVER, 3, 6);
+AccelStepper stepperZ(AccelStepper::DRIVER, 4, 7);
+
+int applyDeadzone(int value, int dz) {
+  return (abs(value) < dz) ? 0 : value;
+}
+
+void setup() {
+
+  Serial.begin(9600);
+
+  pinMode(ENABLE_PIN, OUTPUT);
+
+  stepperX.setMaxSpeed(SPEED);
+  stepperY.setMaxSpeed(SPEED);
+  stepperZ.setMaxSpeed(SPEED);
+}
+
+void readSerial() {
+  if (!Serial.available()) {
+    return;
+  }
+
+  char incoming = Serial.read();
+
+  if (incoming == START_TOKEN) {
+    bufferIndex = 0;
+    readingActive = true;
+    return;
+  }
+
+  if (!readingActive) {
+    return;
+  }
+
+  if (incoming == '\n') {
+    // Stringende markieren
+    inputBuffer[bufferIndex] = 0;  // useless?
+
+    int t1, t2, t3, t4, t5, t6;
+
+    // Parsen von 6 Kanälen
+    int parsed = sscanf(inputBuffer, "%d,%d,%d,%d,%d,%d",
+                        &t1, &t2, &t3, &t4, &t5, &t6);
+
+    if (parsed == MAX_CHANNELS) {
+      // --- X-Achse (c[1]) ---
+      c[1] = applyDeadzone(t1, 80);
+      c[1] = map(c[1], -1000, 1000, -SPEED, SPEED);
+
+      // --- Y-Achse (c[2]) ---
+      c[2] = applyDeadzone(t2, 80);
+      c[2] = map(c[2], -1000, 1000, -SPEED, SPEED);
+
+      c[5] = t5;
+      c[6] = t6;
+    }
+
+    readingActive = false;
+  } else {
+    // Zeichen in den Puffer legen (mit Overflow-Schutz)
+    if (bufferIndex < BUFFER_SIZE - 1) {
+      inputBuffer[bufferIndex++] = incoming;
+    } else {
+      readingActive = false;
+    }
+  }
+}
+void loop() {
+
+  readSerial();
+
+  updateSteppers();
+
+  ChannelOUTPUT();
+}
+
+void ChannelOUTPUT() {
+
+  // Logik für Enable (EN)
+  if (c[5] > 0) {
+    c[5] = 0;
+  } else {
+    c[5] = 1;
+    EN = 0;  // Wenn c[3] = 1, wird EN auf 0 gesetzt (Motor AN)
+  }
+
+  if (c[6] < 0) {  //Drive Action Enable/Disable
+    Drive = 1;
+  } else {
+    Drive = 0;
+  }
+  if (Drive == 1) {  // Arming in Drive Action
+    if (c[5] == 0) {
+      if (c[1] != 0 || c[2] != 0) {
+        EN = 0;  // Wenn die Sticks nicht center sind, Motor AN
+      } else {
+        EN = 1;  // Wenn die Sticks Center sind, Motor AUS
+      }
+    }
+  }
+  if (c[6] > 0 & c[5] == 0) {
+    EN = 1;
+  }
+}
+
+void updateSteppers() {
+
+  if (Drive == 1) {
+    stepperX.setSpeed(c[1]);
+    stepperY.setSpeed(c[2]);
+    digitalWrite(ENABLE_PIN, EN);
+  }
+  if (Drive == 0) {
+    stepperX.setSpeed(0);
+    stepperY.setSpeed(0);
+    digitalWrite(ENABLE_PIN, EN);
+  }
+  stepperX.runSpeed();
+  stepperY.runSpeed();
+  stepperZ.runSpeed();
+}

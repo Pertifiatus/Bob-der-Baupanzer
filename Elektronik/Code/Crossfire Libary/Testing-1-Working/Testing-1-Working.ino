@@ -1,7 +1,7 @@
 #include <CRSF.h>
 
-// RX = GPIO16, TX = GPIO17
-CRSF crossfire(16, 17);
+// RX = GPIO6, TX = GPIO5
+CRSF crossfire(6, 5);
 
 void setup() {
   Serial.begin(115200);
