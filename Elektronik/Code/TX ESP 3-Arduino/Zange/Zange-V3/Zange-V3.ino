@@ -10,12 +10,11 @@ long speedY = 0;
 AccelStepper stepperX(AccelStepper::DRIVER, 2, 5);
 AccelStepper stepperY(AccelStepper::DRIVER, 3, 6);
 AccelStepper stepperZ(AccelStepper::DRIVER, 4, 7);
-AccelStepper stepperA(AccelStepper::DRIVER, 12, 13);
 int applyDeadzone(int value, int dz) {
   return (abs(value) < dz) ? 0 : value;
 }
 
-const byte ST = 0xA1;
+const byte ST = 0xA3;
 const int NUM_CHANNELS = 6;
 int channels[NUM_CHANNELS];
 String input = "";
@@ -30,7 +29,6 @@ void setup() {
   stepperX.setMaxSpeed(SPEED);
   stepperY.setMaxSpeed(SPEED);
   stepperZ.setMaxSpeed(SPEED);
-  stepperA.setMaxSpeed(SPEED);
 
 
   Serial.begin(115200);
@@ -157,8 +155,8 @@ void Channellogic() {
 void Stepper() {
 
   if (Drive == 1) {
-    stepperX.setSpeed(speedX); stepperZ.setSpeed(speedX);
-    stepperY.setSpeed(speedY); stepperA.setSpeed(speedY);
+    stepperX.setSpeed(speedX);
+    stepperY.setSpeed(speedY);
     digitalWrite(ENABLE_PIN, EN);
   }
   if (Drive == 0) {

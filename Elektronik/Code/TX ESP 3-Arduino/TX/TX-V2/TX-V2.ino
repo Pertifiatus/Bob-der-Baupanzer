@@ -25,7 +25,7 @@ void setup() {
 void loop() {
   crossfire.update();
 
-  if (millis() - lastSendESP >= 50) {
+  if (millis() - lastSendESP >= 20) {
     lastSendESP = millis();
     sendESP();
   }
@@ -55,7 +55,6 @@ void sendESP() {
   }
   TXSerial.println();
 }
-
 void sendA1() {
 
   TXSerial.write(ST_A1);
@@ -72,11 +71,11 @@ void sendA2() {
 
   TXSerial.write(ST_A2);
 
-  for (int i = 1; i <= 6; i++) {
+  for (int i = 1; i <= 8; i++) {
     int C = map(crossfire.read(i), 172, 1810, 0, 1000);
     C = constrain(C, 0, 1000);
     TXSerial.print(C);
-    if (i < 6) TXSerial.print(",");
+    if (i < 8) TXSerial.print(",");
   }
   TXSerial.println();
 }
