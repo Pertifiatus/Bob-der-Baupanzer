@@ -8,10 +8,11 @@ String input = "";
 #define RX 14
 #define TX 27
 
+Servo Pitch;
+Servo Sweep;
+
 bool MeineNachricht = false;
 
-int servoPin = 27;
-int servoPin2 = 26;
 
 void setup() {
   Serial.begin(115200);
@@ -19,6 +20,9 @@ void setup() {
   input.reserve(50);
   pinMode(26, OUTPUT);
   Serial2.begin(115200, SERIAL_8N1, RX, TX);
+
+  Pitch.attach(25, 500, 2500);
+  Sweep.attach(26, 500, 2500);
 }
 
 void loop() {
@@ -26,12 +30,11 @@ void loop() {
   ReadSerial();
 
   static unsigned long lastDebugTime = 0;
-  if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
+  if (millis() - lastDebugTime > 200) {  // Nur alle 100ms Text ausgeben (schont die CPU)
     lastDebugTime = millis();
     printDebugInfo();
   }
-
-
+  HeadTracker();
 }
 
 void parseBuffer() {
@@ -76,7 +79,7 @@ void ReadSerial() {
   }
 }
 
-void HeadTracker(){
-
-
+void HeadTracker() {
+  Pitch.write(map(channels[9],0,1000,0,180));
+  Sweep.write(map(channels[10],0,1000,0,180));
 }

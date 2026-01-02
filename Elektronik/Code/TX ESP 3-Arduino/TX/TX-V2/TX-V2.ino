@@ -25,7 +25,7 @@ void setup() {
 void loop() {
   crossfire.update();
 
-  if (millis() - lastSendESP >= 20) {
+  if (millis() - lastSendESP >= 50) {
     lastSendESP = millis();
     sendESP();
   }
