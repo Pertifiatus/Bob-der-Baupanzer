@@ -145,8 +145,6 @@ void Channellogic() {
   if (Drive == 1) {  // Arming in Drive Action
     if (speedX != 0 || speedY != 0) {
       EN = 0;  // Wenn die Sticks nicht center sind, Motor AN
-    } else {
-      EN = 1;  // Wenn die Sticks Center sind, Motor AUS
     }
   }
   if (channels[5] > 0 && channels[4] == 0) {
@@ -157,8 +155,10 @@ void Channellogic() {
 void Stepper() {
 
   if (Drive == 1) {
-    stepperX.setSpeed(speedX); stepperZ.setSpeed(speedX);
-    stepperY.setSpeed(speedY); stepperA.setSpeed(speedY);
+    stepperX.setSpeed(speedX);
+    stepperZ.setSpeed(speedX);
+    stepperY.setSpeed(speedY);
+    stepperA.setSpeed(speedY);
     digitalWrite(ENABLE_PIN, EN);
   }
   if (Drive == 0) {
