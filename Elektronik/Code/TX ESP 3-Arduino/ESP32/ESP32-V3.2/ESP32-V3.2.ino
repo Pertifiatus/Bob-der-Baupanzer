@@ -15,7 +15,7 @@ String input = "";
 
 #define LED_PIN 33
 #define LED_COUNT 10
-Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel HTLED(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 Servo Pitch;
 Servo Sweep;
 Servo video_switcher;
@@ -106,12 +106,12 @@ void Video() {
   Sweep.write(map(channels[10], 0, 1000, 0, 180));
   LED_HT = map(channels[10], 0, 1000, 10, 0);
   for (int i = 0; i <= 10; i++) {
-    strip.setPixelColor(i, 255, 255, 255);  //  Set pixel's color (in RAM)
+    HTLED.setPixelColor(i, 255, 255, 255);  //  Set pixel's color (in RAM)
   }
-  strip.setPixelColor((LED_HT - 2), 0, 0, 0);  //  Set pixel's color (in RAM)
-  strip.setPixelColor((LED_HT - 1), 0, 0, 0);  //  Set pixel's color (in RAM)
-  strip.setPixelColor((LED_HT), 0, 0, 0);      //  Set pixel's color (in RAM)
-  strip.show();
+  HTLED.setPixelColor((LED_HT - 2), 0, 0, 0);  //  Set pixel's color (in RAM)
+  HTLED.setPixelColor((LED_HT - 1), 0, 0, 0);  //  Set pixel's color (in RAM)
+  HTLED.setPixelColor((LED_HT), 0, 0, 0);      //  Set pixel's color (in RAM)
+  HTLED.show();
 
   //Video Switcher
   CAM = map(channels[8], 0, 1000, 1, 3);
