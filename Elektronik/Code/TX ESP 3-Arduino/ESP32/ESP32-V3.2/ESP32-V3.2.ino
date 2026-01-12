@@ -41,9 +41,9 @@ void setup() {
   Sweep.attach(26, 500, 2500);
   video_switcher.attach(32);
 
-  strip.begin();            // INITIALIZE NeoPixel strip object (REQUIRED)
-  strip.show();             // Turn OFF all pixels ASAP
-  strip.setBrightness(50);  // Set BRIGHTNESS to about 1/5 (max = 255)
+  HTLED.begin();            // INITIALIZE NeoPixel strip object (REQUIRED)
+	HTLED.show();             // Turn OFF all pixels ASAP
+  HTLED.setBrightness(50);  // Set BRIGHTNESS to about 1/5 (max = 255)
 }
 
 void loop() {
