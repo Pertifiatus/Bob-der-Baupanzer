@@ -41,8 +41,8 @@ void setup() {
   Sweep.attach(26, 500, 2500);
   video_switcher.attach(32);
 
-  HTLED.begin();            // INITIALIZE NeoPixel strip object (REQUIRED)
-	HTLED.show();             // Turn OFF all pixels ASAP
+  HTLED.begin();            
+	HTLED.show();
   HTLED.setBrightness(50);  // Set BRIGHTNESS to about 1/5 (max = 255)
 }
 
@@ -51,7 +51,7 @@ void loop() {
   ReadSerial();
 
   static unsigned long lastDebugTime = 0;
-  if (millis() - lastDebugTime > 200) {  // Nur alle 100ms Text ausgeben (schont die CPU)
+  if (millis() - lastDebugTime > 200) {
     lastDebugTime = millis();
     printDebugInfo();
   }
@@ -106,11 +106,11 @@ void Video() {
   Sweep.write(map(channels[10], 0, 1000, 0, 180));
   LED_HT = map(channels[10], 0, 1000, 10, 0);
   for (int i = 0; i <= 10; i++) {
-    HTLED.setPixelColor(i, 255, 255, 255);  //  Set pixel's color (in RAM)
+    HTLED.setPixelColor(i, 255, 255, 255);
   }
-  HTLED.setPixelColor((LED_HT - 2), 0, 0, 0);  //  Set pixel's color (in RAM)
-  HTLED.setPixelColor((LED_HT - 1), 0, 0, 0);  //  Set pixel's color (in RAM)
-  HTLED.setPixelColor((LED_HT), 0, 0, 0);      //  Set pixel's color (in RAM)
+  HTLED.setPixelColor((LED_HT - 2), 0, 0, 0); 
+  HTLED.setPixelColor((LED_HT - 1), 0, 0, 0); 
+  HTLED.setPixelColor((LED_HT), 0, 0, 0); 
   HTLED.show();
 
   //Video Switcher
