@@ -17,7 +17,7 @@ int applyDeadzone(int value, int dz) {
   return (abs(value) < dz) ? 0 : value;
 }
 
-const byte ST = 0xA2;
+const byte ST = 0xA3;
 const int NUM_CHANNELS = 8;
 int channels[NUM_CHANNELS];
 String input = "";
