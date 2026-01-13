@@ -12,7 +12,7 @@ unsigned long lastSendA3 = 0;
 const byte ST_ESP = 0x01;  // Start-Token für ESP32
 const byte ST_A1 = 0xA1;   // Start-Token für Arduino Nr. 1
 const byte ST_A2 = 0xA2;   // Start-Token für Arduino Nr. 2
-const byte ST_A3 = 0xA3;   // Start-Token für Arduino Nr. 1
+const byte ST_A3 = 0xA3;   // Start-Token für Arduino Nr. 3
 
 void setup() {
 
