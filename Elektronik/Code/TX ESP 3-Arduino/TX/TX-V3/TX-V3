@@ -83,11 +83,11 @@ void sendA3() {
 
   TXSerial.write(ST_A3);
 
-  for (int i = 1; i <= 3; i++) {
+  for (int i = 1; i <= 8; i++) {
     int C = map(crossfire.read(i), 172, 1810, 0, 1000);
     C = constrain(C, 0, 1000);
     TXSerial.print(C);
-    if (i < 3) TXSerial.print(",");
+    if (i < 8) TXSerial.print(",");
   }
   TXSerial.println();
 }
