@@ -1,0 +1,20 @@
+void vibrateMotor(AccelStepper &stepper, int intensity, int pulses) {
+    // intensity = Schritte pro Richtung (5-20)
+    // pulses = Anzahl Vibrationen (2-5)
+
+    long originalPos = stepper.currentPosition();
+
+    for (int i = 0; i < pulses; i++) {
+      stepper.moveTo(originalPos + intensity);
+      while (stepper.distanceToGo() != 0) stepper.run();
+
+      stepper.moveTo(originalPos - intensity);
+      while (stepper.distanceToGo() != 0) stepper.run();
+    }
+
+    // Zurück zur Ausgangsposition
+    stepper.moveTo(originalPos);
+    while (stepper.distanceToGo() != 0) stepper.run();
+  }
+
+vibrateMotor(stepperX, 10, 2);
