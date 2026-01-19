@@ -169,4 +169,5 @@ void Stepper() {
   stepperX.runSpeed();
   stepperY.runSpeed();
   stepperZ.runSpeed();
+  stepperA.runSpeed();
 }
