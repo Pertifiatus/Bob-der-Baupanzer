@@ -1,0 +1,23 @@
+  void vibrateMotors(int durationMs) {
+    unsigned long start = millis();
+    int dir = 1;
+
+    digitalWrite(ENABLE_PIN, 0);  // AN
+
+    while (millis() - start < durationMs) {
+      int vibeSpeed = SPEED * 0.3 * dir;
+
+      stepperX.setSpeed(vibeSpeed);
+      stepperY.setSpeed(vibeSpeed);
+      stepperZ.setSpeed(vibeSpeed);
+      stepperA.setSpeed(vibeSpeed);
+
+      for (int i = 0; i < 10; i++) {
+        stepperX.runSpeed();
+        stepperY.runSpeed();
+        stepperZ.runSpeed();
+        stepperA.runSpeed();
+      }
+      dir *= -1;  // Richtung wechseln
+    }
+  }
