@@ -40,6 +40,19 @@ void setup() {
 
   activateFailsafe();
   lastPacketTime = millis();
+
+
+for (int Calib == 0) {
+ 
+	ReadSerial();
+	
+	if(channels[7] < 500){
+		Channellogic();
+		Stepper();
+	}
+
+	}
+
 }
 
 void loop() {
