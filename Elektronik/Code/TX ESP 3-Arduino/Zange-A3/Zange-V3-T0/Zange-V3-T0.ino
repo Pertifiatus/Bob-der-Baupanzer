@@ -1,9 +1,10 @@
 #include <AccelStepper.h>
 
 #define ENABLE_PIN 8
-#define SPEED 1300  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
-int EN = 1;         // 0=Enabled, 1=Disabled
-int Grab = 0;       // Grab Status
+#define SPEED 1300	//SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
+int EN = 1;					// 0=Enabled, 1=Disabled
+int Grab = 0;				// Grab Status
+int Calib = 0;			// Calibration Status; 0 = Unkalibriert 1 = Kalibriert
 long speedX = 0;
 long speedY = 0;
 long speedZ = 0;
@@ -41,17 +42,7 @@ void setup() {
   activateFailsafe();
   lastPacketTime = millis();
 
-
-for (int Calib == 0) {
- 
-	ReadSerial();
-	
-	if(channels[7] < 500){
-		Channellogic();
-		Stepper();
-	}
-
-	}
+	Calibration();
 
 }
 
@@ -199,4 +190,10 @@ void Stepper() {
   stepperY.runSpeed();
   stepperZ.runSpeed();
   stepperA.runSpeed();
+}
+
+void Calibration() {
+
+for (Calib == 0) {
+ 
 }
