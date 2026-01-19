@@ -1,10 +1,10 @@
 #include <AccelStepper.h>
 
 #define ENABLE_PIN 8
-#define SPEED 1300	//SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
-int EN = 1;					// 0=Enabled, 1=Disabled
-int Grab = 0;				// Grab Status
-int Calib = 0;			// Calibration Status; 0 = Unkalibriert 1 = Kalibriert
+#define SPEED 1300  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
+int EN = 1;         // 0=Enabled, 1=Disabled
+int Grab = 0;       // Grab Status
+int Calib = 0;      // Calibration Status; 0 = Unkalibriert 1 = Kalibriert
 long speedX = 0;
 long speedY = 0;
 long speedZ = 0;
@@ -42,16 +42,15 @@ void setup() {
   activateFailsafe();
   lastPacketTime = millis();
 
-	Calibration();
-
+  Calibration();
 }
 
 void loop() {
   ReadSerial();
   Channellogic();
   Stepper();
-  
-	/*
+
+  /*
 	static unsigned long lastDebugTime = 0;
   if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
     lastDebugTime = millis();
@@ -155,12 +154,11 @@ void Channellogic() {
   } else {
     EN = 1;  // Motor AUS
   }
-	if (channels[7] < 500 && channels[4] < 500) {
+  if (channels[7] < 500 && channels[4] < 500) {
     Grab = 1;
+  } else {
+    Grab = 0;
   }
-	else { 
-	Grab = 0;
-	}
 
   if (Grab == 1) {  // Arming in Grab Action
     if (speedX != 0 || speedY != 0) {
@@ -194,17 +192,17 @@ void Stepper() {
 
 void Calibration() {
 
-while (Calib == 0) {
-	ReadSerial();	
-if (channels[4] > 500 && channels[7] < 500){
-	stepperA.setCurrentPosition(0);
-	stepperZ.setCurrentPosition(0);
-	stepperY.setCurrentPosition(0);
-	stepperX.setCurrentPosition(0);
-	Calib = 1;
-	}
-	else{
-  	Channellogic();
-  	Stepper();
-	}
+  while (Calib == 0) {
+    ReadSerial();
+    if (channels[4] > 500 && channels[7] < 500) {
+      stepperA.setCurrentPosition(0);
+      stepperZ.setCurrentPosition(0);
+      stepperY.setCurrentPosition(0);
+      stepperX.setCurrentPosition(0);
+      Calib = 1;
+    } else {
+      Channellogic();
+      Stepper();
+    }
+  }
 }
