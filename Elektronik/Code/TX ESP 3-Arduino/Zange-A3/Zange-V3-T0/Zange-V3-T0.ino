@@ -194,13 +194,16 @@ void Stepper() {
 
 void Calibration() {
 
-for (Calib == 0) {
-	if (channels[4] > 500 && channels[7] < 500){
-		Calib = 1;
-		
+while (Calib == 0) {
+	ReadSerial();	
+if (channels[4] > 500 && channels[7] < 500){
+	stepperA.setCurrentPosition(0);
+	stepperZ.setCurrentPosition(0);
+	stepperY.setCurrentPosition(0);
+	stepperX.setCurrentPosition(0);
+	Calib = 1;
 	}
 	else{
-		ReadSerial();
   	Channellogic();
   	Stepper();
 	}
