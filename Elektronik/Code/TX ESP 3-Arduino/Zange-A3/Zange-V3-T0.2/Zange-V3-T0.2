@@ -30,7 +30,7 @@ bool Calibrated = false;
 
 
 void setup() {
-  pinMode(3, OUTPUT);
+  pinMode(2, OUTPUT);
   pinMode(ENABLE_PIN, OUTPUT);
   stepperX.setMaxSpeed(SPEED);
   stepperY.setMaxSpeed(SPEED);
@@ -45,7 +45,7 @@ void setup() {
   lastPacketTime = millis();
 
   delay(5000);
-  digitalWrite(3, 1);
+  digitalWrite(2, 1);
   Serial.println("Relais AN");
 
   Calibration();
