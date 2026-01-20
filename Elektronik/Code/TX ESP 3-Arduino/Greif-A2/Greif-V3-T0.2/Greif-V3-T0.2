@@ -26,6 +26,7 @@ unsigned long lastPacketTime = 0;
 const unsigned long TimeoutFailsafe = 500;
 bool failsafeActive = false;
 bool MeineNachricht = false;
+bool Calibrated = false;
 
 void setup() {
   pinMode(ENABLE_PIN, OUTPUT);
@@ -40,8 +41,35 @@ void setup() {
 
   activateFailsafe();
   lastPacketTime = millis();
+
+	Calibration();
 }
 
+void Calibration() {
+  Serial.print("Calibration-Initiated");
+	while (Calibrated == false) {
+    ReadSerial();
+    static unsigned long lastDebugTime = 0;
+ 
+		if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
+      lastDebugTime = millis();
+      printDebugInfo();
+    }
+
+    	if (channels[4] < 500 && channels[7] > 500) {
+     	 stepperA.setCurrentPosition(0);
+      	stepperZ.setCurrentPosition(0);
+      	stepperY.setCurrentPosition(0);
+      	stepperX.setCurrentPosition(0);
+      	vibrateMotor(stepperX, 10, 2);
+      	Calibrated = true;
+      	Serial.print("Calib-SAVE");
+    	} else {
+      Channellogic();
+      Stepper();
+   	}
+  }
+}
 void loop() {
   ReadSerial();
   Channellogic();
@@ -105,11 +133,11 @@ void parseBuffer() {
 
 void activateFailsafe() {
 
-  channels[0] = 0;
-  channels[1] = 0;
-  channels[2] = 0;
-  channels[3] = 0;
-  channels[4] = 1000;
+  channels[0] = 500;
+  channels[1] = 500;
+  channels[2] = 500;
+  channels[3] = 500;
+  channels[4] = 0;
   channels[5] = 1000;
   channels[6] = 1000;
   channels[7] = 0;
@@ -152,13 +180,9 @@ void Channellogic() {
     EN = 1;  // Motor AUS
   }
 
-  if (channels[4] < 500) {
+  if (channels[7] < 500 && channels[4] > 500) {
     Grab = 1;
   } else {
-    Grab = 0;
-  }
-  
-  if (channels[7] > 500) {
     Grab = 0;
   }
 
@@ -190,4 +214,22 @@ void Stepper() {
   stepperY.runSpeed();
   stepperZ.runSpeed();
   stepperA.runSpeed();
+}
+
+void vibrateMotor(AccelStepper &stepper, int intensity, int pulses) {
+  // intensity = Schritte pro Richtung (5-20)
+  // pulses = Anzahl Vibrationen (2-5)
+
+  long originalPos = stepper.currentPosition();
+
+  for (int i = 0; i < pulses; i++) {
+    stepper.moveTo(originalPos + intensity);
+    while (stepper.distanceToGo() != 0) stepper.run();
+		stepper.moveTo(originalPos - intensity);
+    while (stepper.distanceToGo() != 0) stepper.run();
+  }
+
+  // Zurück zur Ausgangsposition
+  stepper.moveTo(originalPos);
+  while (stepper.distanceToGo() != 0) stepper.run();
 }
