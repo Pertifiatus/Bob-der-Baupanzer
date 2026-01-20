@@ -52,26 +52,27 @@ void setup() {
 
 void Calibration() {
   Serial.print("Calibration-Initiated");
-  while (Calib == 0) {
+	while (Calib == 0) {
     ReadSerial();
     static unsigned long lastDebugTime = 0;
-    if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
+ 
+		if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
       lastDebugTime = millis();
       printDebugInfo();
     }
 
-    if (channels[4] > 500 && channels[7] < 500) {
-      stepperA.setCurrentPosition(0);
-      stepperZ.setCurrentPosition(0);
-      stepperY.setCurrentPosition(0);
-      stepperX.setCurrentPosition(0);
-      vibrateMotor(stepperX, 10, 2);
-      Calib = 1;
-      Serial.print("Calib-SAVE");
-    } else {
+    	if (channels[4] < 500 && channels[7] > 500) {
+     	 stepperA.setCurrentPosition(0);
+      	stepperZ.setCurrentPosition(0);
+      	stepperY.setCurrentPosition(0);
+      	stepperX.setCurrentPosition(0);
+      	vibrateMotor(stepperX, 10, 2);
+      	Calib = 1;
+      	Serial.print("Calib-SAVE");
+    	} else {
       Channellogic();
       Stepper();
-    }
+   	}
   }
 }
 
@@ -136,14 +137,14 @@ void parseBuffer() {
 
 void activateFailsafe() {
 
-  channels[0] = 0;
-  channels[1] = 0;
-  channels[2] = 0;
-  channels[3] = 0;
-  channels[4] = -1000;
+  channels[0] = 500;
+  channels[1] = 500;
+  channels[2] = 500;
+  channels[3] = 500;
+  channels[4] = 0;
   channels[5] = 1000;
   channels[6] = 1000;
-  channels[7] = -1000;
+  channels[7] = 0;
 }
 
 void printDebugInfo() {
