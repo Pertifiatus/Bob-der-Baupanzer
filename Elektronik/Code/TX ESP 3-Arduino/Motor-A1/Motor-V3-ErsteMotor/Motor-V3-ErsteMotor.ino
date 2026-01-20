@@ -137,7 +137,7 @@ void Channellogic() {
     EN = 1;  // Motor AUS
   }
 
-  if (channels[4] > 500) {
+  if (channels[4] < 500) {
     Drive = 1;
   } else {
     Drive = 0;
@@ -147,7 +147,7 @@ void Channellogic() {
       EN = 0;  // Wenn die Sticks nicht center sind, Motor AN
     }
   }
-  if (channels[5] > 0 && channels[4] == 0) {
+  if (channels[5] > 500 && channels[4] > 500) {
     EN = 1;
   }
 }
@@ -159,13 +159,14 @@ void Stepper() {
     stepperZ.setSpeed(speedX);
     stepperY.setSpeed(speedY);
     stepperA.setSpeed(speedY);
-    digitalWrite(ENABLE_PIN, EN);
   }
   if (Drive == 0) {
     stepperX.setSpeed(0);
+		stepperZ.setSpeed(0);
     stepperY.setSpeed(0);
-    digitalWrite(ENABLE_PIN, EN);
+		stepperA.setSpeed(0);
   }
+  digitalWrite(ENABLE_PIN, EN);
   stepperX.runSpeed();
   stepperY.runSpeed();
   stepperZ.runSpeed();
