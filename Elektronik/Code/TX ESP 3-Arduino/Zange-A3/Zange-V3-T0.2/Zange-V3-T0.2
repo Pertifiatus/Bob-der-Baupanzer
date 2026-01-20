@@ -53,7 +53,7 @@ void setup() {
 
 void Calibration() {
   Serial.print("Calibration-Initiated");
-	while (Calibrated == false) {
+	while (!Calibrated) {
     ReadSerial();
     static unsigned long lastDebugTime = 0;
  
