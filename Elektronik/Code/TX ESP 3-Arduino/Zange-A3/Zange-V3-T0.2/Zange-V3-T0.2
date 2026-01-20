@@ -53,7 +53,7 @@ void setup() {
 
 void Calibration() {
   Serial.print("Calibration-Initiated");
-	while (Calibrated = false) {
+	while (Calibrated == false) {
     ReadSerial();
     static unsigned long lastDebugTime = 0;
  
@@ -68,7 +68,7 @@ void Calibration() {
       	stepperY.setCurrentPosition(0);
       	stepperX.setCurrentPosition(0);
       	vibrateMotor(stepperX, 10, 2);
-      	Calib = 1;
+      	Calibrated = true;
       	Serial.print("Calib-SAVE");
     	} else {
       Channellogic();
