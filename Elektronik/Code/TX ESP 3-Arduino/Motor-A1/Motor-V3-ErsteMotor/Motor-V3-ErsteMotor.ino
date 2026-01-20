@@ -101,10 +101,10 @@ void parseBuffer() {
 
 void activateFailsafe() {
   // Sicherheitswerte definieren (z.B. alles auf 0)
-  channels[0] = 0;
-  channels[1] = 0;
-  channels[2] = 0;
-  channels[3] = 0;
+  channels[0] = 500;
+  channels[1] = 500;
+  channels[2] = 500;
+  channels[3] = 500;
   channels[4] = 0;
   channels[5] = 1000;
 }
