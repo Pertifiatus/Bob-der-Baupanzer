@@ -42,40 +42,42 @@ void setup() {
   activateFailsafe();
   lastPacketTime = millis();
 
-	Calibration();
+  Calibration();
 }
 
 void Calibration() {
   Serial.print("Calibration-Initiated");
-	while (!Calibrated) {
+  while (!Calibrated) {
     ReadSerial();
     static unsigned long lastDebugTime = 0;
- 
-		if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
+
+    if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
       lastDebugTime = millis();
       printDebugInfo();
     }
 
-    	if (channels[4] < 500 && channels[7] > 500) {
-     	 stepperA.setCurrentPosition(0);
-      	stepperZ.setCurrentPosition(0);
-      	stepperY.setCurrentPosition(0);
-      	stepperX.setCurrentPosition(0);
-      	vibrateMotor(stepperX, 10, 2);
-      	Calibrated = true;
-      	Serial.print("Calib-SAVE");
-    	} else {
+    if (channels[4] < 500 && channels[7] > 500) {
+      stepperA.setCurrentPosition(0);
+      stepperZ.setCurrentPosition(0);
+      stepperY.setCurrentPosition(0);
+      stepperX.setCurrentPosition(0);
+      Calibrated = true;
+      digitalWrite(ENABLE_PIN, 0);
+      vibrateMotor(stepperX, 10, 2);
+      digitalWrite(ENABLE_PIN, 1);
+      Serial.print("Calib-SAVE");
+    } else {
       Channellogic();
       Stepper();
-   	}
+    }
   }
 }
 void loop() {
   ReadSerial();
   Channellogic();
   Stepper();
-  
-	/*
+
+  /*
 	static unsigned long lastDebugTime = 0;
   if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
     lastDebugTime = millis();
@@ -187,11 +189,11 @@ void Channellogic() {
   }
 
   if (Grab == 1) {  // Arming in Grab Action
-    if (speedX != 0 || speedY != 0) {
+    if (speedX != 0 || speedY != 0 || speedZ != 0 || speedA != 0) {
       EN = 0;  // Wenn die Sticks nicht center sind, Motor AN
     }
   }
-  if (channels[6] > 0 && channels[4] == 1000) {  // Automatischer Override
+  if (channels[6] > 500 && channels[4] > 500) {  // Automatischer Override
     EN = 1;
   }
 }
@@ -216,20 +218,30 @@ void Stepper() {
   stepperA.runSpeed();
 }
 
-void vibrateMotor(AccelStepper &stepper, int intensity, int pulses) {
-  // intensity = Schritte pro Richtung (5-20)
-  // pulses = Anzahl Vibrationen (2-5)
+void Calibration() {
+  Serial.print("Calibration-Initiated");
+  while (!Calibrated) {
+    ReadSerial();
+    static unsigned long lastDebugTime = 0;
 
-  long originalPos = stepper.currentPosition();
+    if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
+      lastDebugTime = millis();
+      printDebugInfo();
+    }
 
-  for (int i = 0; i < pulses; i++) {
-    stepper.moveTo(originalPos + intensity);
-    while (stepper.distanceToGo() != 0) stepper.run();
-		stepper.moveTo(originalPos - intensity);
-    while (stepper.distanceToGo() != 0) stepper.run();
+    if (channels[4] < 500 && channels[7] > 500) {
+      stepperA.setCurrentPosition(0);
+      stepperZ.setCurrentPosition(0);
+      stepperY.setCurrentPosition(0);
+      stepperX.setCurrentPosition(0);
+      Calibrated = true;
+      digitalWrite(ENABLE_PIN, 0);
+      vibrateMotor(stepperX, 10, 2);
+      digitalWrite(ENABLE_PIN, 1);
+      Serial.print("Calib-SAVE");
+    } else {
+      Channellogic();
+      Stepper();
+    }
   }
-
-  // Zurück zur Ausgangsposition
-  stepper.moveTo(originalPos);
-  while (stepper.distanceToGo() != 0) stepper.run();
 }

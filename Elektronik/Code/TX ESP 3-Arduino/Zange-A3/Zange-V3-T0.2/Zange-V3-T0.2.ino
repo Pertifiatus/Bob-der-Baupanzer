@@ -53,27 +53,29 @@ void setup() {
 
 void Calibration() {
   Serial.print("Calibration-Initiated");
-	while (!Calibrated) {
+  while (!Calibrated) {
     ReadSerial();
     static unsigned long lastDebugTime = 0;
- 
-		if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
+
+    if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
       lastDebugTime = millis();
       printDebugInfo();
     }
 
-    	if (channels[4] < 500 && channels[7] > 500) {
-     	 stepperA.setCurrentPosition(0);
-      	stepperZ.setCurrentPosition(0);
-      	stepperY.setCurrentPosition(0);
-      	stepperX.setCurrentPosition(0);
-      	vibrateMotor(stepperX, 10, 2);
-      	Calibrated = true;
-      	Serial.print("Calib-SAVE");
-    	} else {
+    if (channels[4] < 500 && channels[7] > 500) {
+      stepperA.setCurrentPosition(0);
+      stepperZ.setCurrentPosition(0);
+      stepperY.setCurrentPosition(0);
+      stepperX.setCurrentPosition(0);
+      Calibrated = true;
+      digitalWrite(ENABLE_PIN, 0);
+      vibrateMotor(stepperX, 10, 2);
+      digitalWrite(ENABLE_PIN, 1);
+      Serial.print("Calib-SAVE");
+    } else {
       Channellogic();
       Stepper();
-   	}
+    }
   }
 }
 
@@ -167,24 +169,24 @@ void Channellogic() {
   speedX = map(channels[0], 0, 1000, -SPEED, SPEED);
   speedX = applyDeadzone(speedX, 200);
 
-	speedY = map(channels[1], 0, 1000, -SPEED, SPEED);
+  speedY = map(channels[1], 0, 1000, -SPEED, SPEED);
   speedY = applyDeadzone(speedY, 100);
 
   speedZ = map(channels[2], 0, 1000, -SPEED, SPEED);
   speedZ = applyDeadzone(speedZ, 200);
-	
-	speedA = map(channels[3], 0, 1000, -SPEED, SPEED);
+
+  speedA = map(channels[3], 0, 1000, -SPEED, SPEED);
   speedA = applyDeadzone(speedA, 100);
 
   // Logik für Enable (EN)
-  if (channels[6] < 500) {		//Falls Channel 6 kleiner 500 ist
-    EN = 0;  // Motor AN
+  if (channels[6] < 500) {  //Falls Channel 6 kleiner 500 ist
+    EN = 0;                 // Motor AN
   } else {
     EN = 1;  // Motor AUS
   }
 
 
-  if (channels[7] > 500 && channels[4] > 500) {		//Falls Channel 7 großer 500, und Channel 4 großer 500. (Beide Switches gedrückt)
+  if (channels[7] > 500 && channels[4] > 500) {  //Falls Channel 7 großer 500, und Channel 4 großer 500. (Beide Switches gedrückt)
     Grab = 1;
   } else {
     Grab = 0;
@@ -203,7 +205,7 @@ void Channellogic() {
 
 void Stepper() {
 
-  if (Grab == 1) {							//Falls der Grab Status
+  if (Grab == 1) {  //Falls der Grab Status
     stepperX.setSpeed(speedX);
     stepperY.setSpeed(speedY);
     stepperZ.setSpeed(speedZ);
@@ -214,27 +216,24 @@ void Stepper() {
     stepperZ.setSpeed(0);
     stepperA.setSpeed(0);
   }
-  digitalWrite(ENABLE_PIN, EN); // Arming Status 
+  digitalWrite(ENABLE_PIN, EN);  // Arming Status
   stepperX.runSpeed();
   stepperY.runSpeed();
   stepperZ.runSpeed();
   stepperA.runSpeed();
 }
 
+
 void vibrateMotor(AccelStepper &stepper, int intensity, int pulses) {
-  // intensity = Schritte pro Richtung (5-20)
-  // pulses = Anzahl Vibrationen (2-5)
 
   long originalPos = stepper.currentPosition();
 
   for (int i = 0; i < pulses; i++) {
     stepper.moveTo(originalPos + intensity);
     while (stepper.distanceToGo() != 0) stepper.run();
-		stepper.moveTo(originalPos - intensity);
+    stepper.moveTo(originalPos - intensity);
     while (stepper.distanceToGo() != 0) stepper.run();
   }
-
-  // Zurück zur Ausgangsposition
   stepper.moveTo(originalPos);
   while (stepper.distanceToGo() != 0) stepper.run();
 }
