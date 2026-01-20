@@ -191,12 +191,12 @@ void Channellogic() {
   }
 
   if (Grab == 1) {  // Arming in Grab Action
-    if (speedX != 0 || speedY != 0) {
+    if (speedX != 0 || speedY != 0 || speedZ != 0 || speedA != 0) {
       EN = 0;  // Wenn die Sticks nicht center sind, Motor AN
     }
   }
 
-  if (channels[6] > 0 && channels[4] == -1000) {  // Override, falls Channel gewechselt wird, während sich die Motoren drehen
+  if (channels[6] > 500 && channels[4] < 500) {  // Override, falls Channel gewechselt wird, während sich die Motoren drehen
     EN = 1;
   }
 }
