@@ -4,7 +4,6 @@
 #define SPEED 1300  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
 int EN = 1;         // 0=Enabled, 1=Disabled
 int Grab = 0;       // Grab Status
-int Calib = 0;      // Calibration Status; 0 = Unkalibriert 1 = Kalibriert
 long speedX = 0;
 long speedY = 0;
 long speedZ = 0;
@@ -27,6 +26,8 @@ unsigned long lastPacketTime = 0;
 const unsigned long TimeoutFailsafe = 500;
 bool failsafeActive = false;
 bool MeineNachricht = false;
+bool Calibrated = false;
+
 
 void setup() {
   pinMode(3, OUTPUT);
@@ -52,7 +53,7 @@ void setup() {
 
 void Calibration() {
   Serial.print("Calibration-Initiated");
-	while (Calib == 0) {
+	while (Calibrated = false) {
     ReadSerial();
     static unsigned long lastDebugTime = 0;
  
