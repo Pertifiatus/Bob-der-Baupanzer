@@ -1,0 +1,46 @@
+// Definiere deine Limits und die Bremszone (oben im Code)
+const long LIMIT_MIN = -5000; 
+const long LIMIT_MAX = 5000;
+const long BREMS_ZONE = 500; // Ab 500 Schritten Entfernung wird gebremst
+
+void Stepper() {
+  if (Grab == 1) {
+    // Beispiel für Achse X (wiederhole das für Y, Z, A)
+    long currentPosX = stepperX.currentPosition();
+    long finalSpeedX = speedX; // Startwert vom Joystick
+
+    if (speedX > 0 && (LIMIT_MAX - currentPosX) < BREMS_ZONE) {
+        // Bremse Richtung Plus
+        finalSpeedX = speedX * (LIMIT_MAX - currentPosX) / BREMS_ZONE;
+    } 
+    else if (speedX < 0 && (currentPosX - LIMIT_MIN) < BREMS_ZONE) {
+        // Bremse Richtung Minus
+        finalSpeedX = speedX * (currentPosX - LIMIT_MIN) / BREMS_ZONE;
+    }
+
+    // Not-Stopp Sicherheitscheck
+    if (currentPosX >= LIMIT_MAX && speedX > 0) finalSpeedX = 0;
+    if (currentPosX <= LIMIT_MIN && speedX < 0) finalSpeedX = 0;
+
+    stepperX.setSpeed(finalSpeedX);
+    
+    // Hier die anderen Motoren nach dem gleichen Prinzip...
+    stepperY.setSpeed(speedY); 
+    stepperZ.setSpeed(speedZ);
+    stepperA.setSpeed(speedA);
+
+  } else {
+    stepperX.setSpeed(0);
+    stepperY.setSpeed(0);
+    stepperZ.setSpeed(0);
+    stepperA.setSpeed(0);
+  }
+
+  digitalWrite(ENABLE_PIN, EN);
+  
+  // Wichtig: Die runSpeed() Aufrufe müssen außerhalb aller IFs stehen
+  stepperX.runSpeed();
+  stepperY.runSpeed();
+  stepperZ.runSpeed();
+  stepperA.runSpeed();
+}
