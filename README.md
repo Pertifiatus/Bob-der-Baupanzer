@@ -36,7 +36,7 @@
 
 **Bob der Baupanzer** ist ein DIY-Robotikprojekt: Ein ferngesteuertes Kettenfahrzeug mit montiertem Robotergreifarm. Gesteuert wird Bob über das ExpressLRS-Protokoll mit einem Radiomaster Boxer – präzise, mit niedriger Latenz und bis zu drei Live-Kamerafeeds.
 
-> *"Wir bauen nicht nur einen Panzer – wir bauen einen Kumpel."*
+> *"Wir bauen nicht nur einen Panzer – wir bauen BOB."*
 
 ---
 
