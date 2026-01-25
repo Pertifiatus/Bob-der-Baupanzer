@@ -69,7 +69,7 @@
 ### 🦾 Roboter-Greifarm
 - NEMA17 Schrittmotoren
 - Cycloid Getriebe für Drehmoment
-- NEMA17 unnd NEMA14 gesteuerter Greifer (SG90)
+- NEMA17 unnd NEMA14 gesteuerter Greifer
 - Präzise Positionierung
 
 </td>
