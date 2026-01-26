@@ -9,6 +9,22 @@ long speedY = 0;
 long speedZ = 0;
 long speedA = 0;
 
+const long LIMIT_MIN_Drehachse1X = -5000;
+const long LIMIT_MAX_Drehachse1X = 5000;
+const long BREMSZONE_Drehachse1X = 500;
+
+const long LIMIT_MIN_Gelenk2Y = -5000;
+const long LIMIT_MAX_Gelenk2Y = 5000;
+const long BREMSZONE_Gelenk2Y = 500;
+
+const long LIMIT_MIN_Gelenk3Z = -5000;
+const long LIMIT_MAX_Gelenk3Z = 5000;
+const long BREMSZONE_Gelenk3Z = 500;
+
+const long LIMIT_MIN_Drehachse4A = -5000;
+const long LIMIT_MAX_Drehachse4A = 5000;
+const long BREMSZONE_Drehachse4A = 500;
+
 AccelStepper Drehachse1X(AccelStepper::DRIVER, 2, 5);
 AccelStepper Gelenk2Y(AccelStepper::DRIVER, 3, 6);
 AccelStepper Gelenk3Z(AccelStepper::DRIVER, 4, 7);
@@ -30,11 +46,17 @@ bool Calibrated = false;
 
 void setup() {
   pinMode(ENABLE_PIN, OUTPUT);
-  Drehachse1X.setMaxSpeed(SPEED); Drehachse1X.setAcceleration(2000); 
-  Gelenk2Y.setMaxSpeed(SPEED); Gelenk2Y.setAcceleration(2000); 
-  Gelenk3Z.setMaxSpeed(SPEED);   Drehachse3Z.setAcceleration(2000); 
-  Drehachse4A.setMaxSpeed(SPEED);  Drehachse4A.setAcceleration(2000); 
+  Drehachse1X.setMaxSpeed(SPEED);
+  Drehachse1X.setAcceleration(2000);
 
+  Gelenk2Y.setMaxSpeed(SPEED);
+  Gelenk2Y.setAcceleration(2000);
+
+  Gelenk3Z.setMaxSpeed(SPEED);
+  Gelenk3Z.setAcceleration(2000);
+
+  Drehachse4A.setMaxSpeed(SPEED);
+  Drehachse4A.setAcceleration(2000);
 
   Serial.begin(115200);
   input.reserve(50);
@@ -199,18 +221,35 @@ void Channellogic() {
 }
 
 void Stepper() {
-
   if (Grab == 1) {
-    Drehachse1X.setSpeed(speedX);
+    long currentPosX = Drehachse1X.currentPosition();
+    long finalSpeedX = speedX;
+
+    if (speedX > 0 && (LIMIT_MAX_Drehachse1X - currentPosX) < BREMSZONE_Drehachse1X) {
+      // Bremse Richtung Plus
+      finalSpeedX = speedX * (LIMIT_MAX_Drehachse1X - currentPosX) / BREMSZONE_Drehachse1X;
+
+    } else if (speedX < 0 && (currentPosX - LIMIT_MIN_Drehachse1X) < BREMSZONE_Drehachse1X) {
+      // Bremse Richtung Minus
+      finalSpeedX = speedX * (currentPosX - LIMIT_MIN_Drehachse1X) / BREMSZONE_Drehachse1X;
+    }
+
+    // Not-Stopp Sicherheitscheck
+    if (currentPosX >= LIMIT_MAX_Drehachse1X && speedX > 0) finalSpeedX = 0;
+    if (currentPosX <= LIMIT_MIN_Drehachse1X && speedX < 0) finalSpeedX = 0;
+
+    Drehachse1X.setSpeed(finalSpeedX);
     Gelenk2Y.setSpeed(speedY);
     Gelenk3Z.setSpeed(speedZ);
     Drehachse4A.setSpeed(speedA);
+
   } else {
     Drehachse1X.setSpeed(0);
     Gelenk2Y.setSpeed(0);
     Gelenk3Z.setSpeed(0);
     Drehachse4A.setSpeed(0);
   }
+
   digitalWrite(ENABLE_PIN, EN);
   Drehachse1X.runSpeed();
   Gelenk2Y.runSpeed();
@@ -219,20 +258,20 @@ void Stepper() {
 }
 
 void vibrateMotor(AccelStepper &stepper, int intensity, int pulses) {
-    // intensity = Schritte pro Richtung (5-20)
-    // pulses = Anzahl Vibrationen (2-5)
+  // intensity = Schritte pro Richtung (5-20)
+  // pulses = Anzahl Vibrationen (2-5)
 
-    long originalPos = stepper.currentPosition();
+  long originalPos = stepper.currentPosition();
 
-    for (int i = 0; i < pulses; i++) {
-      stepper.moveTo(originalPos + intensity);
-      while (stepper.distanceToGo() != 0) stepper.run();
+  for (int i = 0; i < pulses; i++) {
+    stepper.moveTo(originalPos + intensity);
+    while (stepper.distanceToGo() != 0) stepper.run();
 
-      stepper.moveTo(originalPos - intensity);
-      while (stepper.distanceToGo() != 0) stepper.run();
-    }
-
-    // Zurück zur Ausgangsposition
-    stepper.moveTo(originalPos);
+    stepper.moveTo(originalPos - intensity);
     while (stepper.distanceToGo() != 0) stepper.run();
   }
+
+  // Zurück zur Ausgangsposition
+  stepper.moveTo(originalPos);
+  while (stepper.distanceToGo() != 0) stepper.run();
+}

@@ -1,0 +1,34 @@
+ESP32 Changelogs
+================
+
+ESP32-V3:
+---------
+- Basis-Sketch für den ESP32 auf dem Fahrzeug
+- Empfängt alle 14 Kanaele über Serial2 (RX=14, TX=27)
+- Startbyte 0x01 für ESP32-Pakete
+- Debug-Ausgabe alle 100ms auf Serial
+- HeadTracker Funktion vorbereitet aber noch leer
+- ESP32PWM Timer 0 reserviert
+
+ESP32-V3.1:
+-----------
+- Head-Tracker implementiert!
+- Zwei Servos hinzugefuegt: Pitch (Pin 25) und Sweep (Pin 26)
+- Servos mit 500-2500us Pulsweite konfiguriert
+- HeadTracker() Funktion liest Kanal 9 (Pitch) und Kanal 10 (Sweep)
+- Werte werden von 0-1000 auf 0-180 Grad gemappt
+- Debug-Intervall auf 200ms erhoeht
+
+ESP32-V3.2:
+-----------
+- NeoPixel LED-Strip eingebaut! (10 LEDs an Pin 33)
+- Adafruit_NeoPixel Library hinzugefuegt
+- LEDs zeigen die aktuelle Sweep-Position an
+  * Alle LEDs weiss, nur 3 LEDs an der aktuellen Position aus (als Positionsanzeige)
+- Video-Switcher Servo an Pin 32 hinzugefuegt
+- 3 Kamera-Positionen ueber CH8:
+  * Position 1: 1000us
+  * Position 2: 1500us
+  * Position 3: 2000us
+- Video() Funktion ersetzt HeadTracker() und macht beides
+- LED Helligkeit auf 50 (von 255) eingestellt

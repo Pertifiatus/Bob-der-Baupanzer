@@ -1,0 +1,33 @@
+Motor-A1 Changelogs
+===================
+
+Motor-V1:
+---------
+- Erster Sketch für den Motor-Arduino
+- Empfängt 7 Kanäle über Serial mit Startbyte 0xA1
+- Gibt die empfangenen Werte einfach auf dem Serial Monitor aus
+- Noch keine Motorsteuerung, nur zum Testen der Kommunikation
+
+Motor-V2:
+---------
+- Failsafe eingebaut: Wenn 500ms keine Daten kommen, werden alle Kanäle auf 0 gesetzt
+- Kanalanzahl auf 6 reduziert
+- "MeineNachricht" Flag eingeführt - damit werden nur Pakete mit dem richtigen Startbyte verarbeitet
+- Debug-Ausgabe läuft jetzt nur alle 100ms (schont die CPU)
+- Zeigt an ob Daten empfangen werden [OK] oder Failsafe aktiv ist [!]
+
+Motor-V3-ErsteMotor:
+--------------------
+- AccelStepper Library eingebunden für 4 Schrittmotoren (X, Y, Z, A)
+- Enable-Pin (Pin 8) für die Treiber hinzugefuegt
+- Deadzone-Funktion eingebaut damit kleine Stick-Bewegungen ignoriert werden
+- Drive-Modus eingeführt: Motoren laufen nur wenn CH4 aktiviert ist
+- Arming-Logik: Motoren werden automatisch aktiviert wenn die Sticks bewegt werden
+- Failsafe-Werte jetzt auf Mittelstellung (500) statt 0
+- Speed auf 1300 Steps/s eingestellt
+- Debug-Ausgabe auskommentiert (für Performance)
+
+Motor-V3.1:
+-----------
+- Keine Änderungen zu V3-ErsteMotor
+- Nur aufgeräumte Version ohne zusätzliche Leerzeilen

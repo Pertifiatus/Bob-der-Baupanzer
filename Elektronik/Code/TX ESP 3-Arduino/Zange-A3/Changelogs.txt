@@ -1,0 +1,56 @@
+Zange-A3 Changelogs
+===================
+
+Zange-V0:
+---------
+- Minimal-Sketch nur zum Testen des Relais
+- Pin 3 als Output
+- Nach 5 Sekunden Verzoegerung wird das Relais eingeschaltet
+- Sonst nix - nur zum Pruefen ob die Hardware funktioniert
+
+Zange-V3:
+---------
+- Vollstaendiger Zangen-Sketch basierend auf Greif-Code
+- Startbyte 0xA3 fuer Zangen-Adresse
+- 8 Kanaele werden empfangen
+- 4 Stepper-Motoren (X, Y, Z, A) wie beim Greifarm
+- Grab-Bedingung: CH7 < 500 UND CH4 < 500 (beide Schalter druecken)
+- Enable ueber CH6
+- Failsafe auf 0/1000 Werte
+- Deadzone fuer alle Achsen
+
+Zange-V3-T0:
+------------
+- Calibration-Funktion eingebaut
+- "Calib" Variable (0 = nicht kalibriert, 1 = kalibriert)
+- Beim Start laeuft Calibration-Schleife
+- Man kann Motoren bewegen und dann Position speichern
+- Speichern mit CH4 > 500 und CH7 < 500
+- Noch kein Feedback beim Speichern
+
+Zange-V3-T0.1:
+--------------
+- Relais-Steuerung hinzugefuegt (Pin 3)
+- 5 Sekunden Verzoegerung beim Start, dann Relais an
+- "Relais AN" wird auf Serial ausgegeben
+- vibrateMotor() Funktion fuer haptisches Feedback
+- Calibration gibt jetzt "Calibration-Initiated" und "Calib-SAVE" aus
+- Bei Speichern vibriert der Motor kurz zur Bestaetigung
+- Debug-Ausgabe auch waehrend Calibration aktiv
+
+Zange-V3-T0.2:
+--------------
+- Relais-Pin von 3 auf 2 geaendert
+- "Calib" (int) zu "Calibrated" (bool) geaendert - sauberer Code
+- Grab-Bedingung komplett geaendert: CH7 > 500 UND CH4 > 500
+  (Jetzt muessen beide Schalter in die andere Richtung)
+- Calibration-Bedingung angepasst: CH4 < 500 und CH7 > 500
+- Override-Logik verbessert: CH6 > 500 und CH4 < 500 deaktiviert Motoren
+- Failsafe-Werte auf 500 (Mittelstellung) geaendert statt 0
+- Enable wird bei Calibration kurz aktiviert fuer die Vibration
+- Mehr Kommentare im Code fuer bessere Lesbarkeit
+
+Zange-V4:
+--------------
+- Endstops bei den 2 Kanälen hinzugefügt. 
+- Die Schrittmotoren umbenannt

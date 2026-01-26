@@ -3,11 +3,9 @@
 #define ENABLE_PIN 8
 #define SPEED 1300  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
 int EN = 1;         // 0=Enabled, 1=Disabled
-int Grab = 0;       // Grab Status
+int Drive = 0;      // Drive Status
 long speedX = 0;
 long speedY = 0;
-long speedZ = 0;
-long speedA = 0;
 
 AccelStepper stepperX(AccelStepper::DRIVER, 2, 5);
 AccelStepper stepperY(AccelStepper::DRIVER, 3, 6);
@@ -17,8 +15,8 @@ int applyDeadzone(int value, int dz) {
   return (abs(value) < dz) ? 0 : value;
 }
 
-const byte ST = 0xA2;
-const int NUM_CHANNELS = 8;
+const byte ST = 0xA1;
+const int NUM_CHANNELS = 6;
 int channels[NUM_CHANNELS];
 String input = "";
 
@@ -26,7 +24,6 @@ unsigned long lastPacketTime = 0;
 const unsigned long TimeoutFailsafe = 500;
 bool failsafeActive = false;
 bool MeineNachricht = false;
-bool Calibrated = false;
 
 void setup() {
   pinMode(ENABLE_PIN, OUTPUT);
@@ -41,49 +38,19 @@ void setup() {
 
   activateFailsafe();
   lastPacketTime = millis();
-
-  Calibration();
 }
 
-void Calibration() {
-  Serial.print("Calibration-Initiated");
-  while (!Calibrated) {
-    ReadSerial();
-    static unsigned long lastDebugTime = 0;
-
-    if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
-      lastDebugTime = millis();
-      printDebugInfo();
-    }
-
-    if (channels[4] < 500 && channels[7] > 500) {
-      stepperA.setCurrentPosition(0);
-      stepperZ.setCurrentPosition(0);
-      stepperY.setCurrentPosition(0);
-      stepperX.setCurrentPosition(0);
-      Calibrated = true;
-      digitalWrite(ENABLE_PIN, 0);
-      vibrateMotor(stepperX, 10, 2);
-      digitalWrite(ENABLE_PIN, 1);
-      Serial.print("Calib-SAVE");
-    } else {
-      Channellogic();
-      Stepper();
-    }
-  }
-}
 void loop() {
   ReadSerial();
   Channellogic();
   Stepper();
-
   /*
-	static unsigned long lastDebugTime = 0;
+  static unsigned long lastDebugTime = 0;
   if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
     lastDebugTime = millis();
-    printDebugInfo();
+  printDebugInfo();
   }
-	*/
+  */
 }
 
 
@@ -119,10 +86,9 @@ void ReadSerial() {
 }
 
 void parseBuffer() {
-  int n = sscanf(input.c_str(), "%d,%d,%d,%d,%d,%d,%d,%d",
+  int n = sscanf(input.c_str(), "%d,%d,%d,%d,%d,%d",
                  &channels[0], &channels[1], &channels[2],
-                 &channels[3], &channels[4], &channels[5],
-                 &channels[6], &channels[7]);
+                 &channels[3], &channels[4], &channels[5]);
 
   if (n == NUM_CHANNELS) {
     // Wenn Daten korrekt ankommen -> Failsafe beenden
@@ -134,15 +100,13 @@ void parseBuffer() {
 }
 
 void activateFailsafe() {
-
+  // Sicherheitswerte definieren (z.B. alles auf 0)
   channels[0] = 500;
   channels[1] = 500;
   channels[2] = 500;
   channels[3] = 500;
   channels[4] = 0;
   channels[5] = 1000;
-  channels[6] = 1000;
-  channels[7] = 0;
 }
 
 void printDebugInfo() {
@@ -156,7 +120,6 @@ void printDebugInfo() {
     Serial.print(channels[i]);
     if (i < NUM_CHANNELS - 1) Serial.print(",");
   }
-  Serial.print(Grab);
   Serial.println();
 }
 
@@ -164,52 +127,44 @@ void Channellogic() {
   speedX = map(channels[0], 0, 1000, -SPEED, SPEED);
   speedX = applyDeadzone(speedX, 200);
 
-
   speedY = map(channels[1], 0, 1000, -SPEED, SPEED);
   speedY = applyDeadzone(speedY, 100);
 
-  speedZ = map(channels[2], 0, 1000, -SPEED, SPEED);
-  speedZ = applyDeadzone(speedZ, 200);
-
-
-  speedA = map(channels[3], 0, 1000, -SPEED, SPEED);
-  speedA = applyDeadzone(speedA, 100);
-
   // Logik für Enable (EN)
-  if (channels[6] < 500) {
+  if (channels[5] < 500) {
     EN = 0;  // Motor AN
   } else {
     EN = 1;  // Motor AUS
   }
 
-  if (channels[7] < 500 && channels[4] > 500) {
-    Grab = 1;
+  if (channels[4] < 500) {
+    Drive = 1;
   } else {
-    Grab = 0;
+    Drive = 0;
   }
-
-  if (Grab == 1) {  // Arming in Grab Action
-    if (speedX != 0 || speedY != 0 || speedZ != 0 || speedA != 0) {
+  if (Drive == 1) {  // Arming in Drive Action
+    if (speedX != 0 || speedY != 0) {
       EN = 0;  // Wenn die Sticks nicht center sind, Motor AN
     }
   }
-  if (channels[6] > 500 && channels[4] > 500) {  // Automatischer Override
+  if (channels[5] > 500 && channels[4] > 500) {
     EN = 1;
   }
 }
 
 void Stepper() {
 
-  if (Grab == 1) {
+  if (Drive == 1) {
     stepperX.setSpeed(speedX);
+    stepperZ.setSpeed(speedX);
     stepperY.setSpeed(speedY);
-    stepperZ.setSpeed(speedZ);
-    stepperA.setSpeed(speedA);
-  } else {
+    stepperA.setSpeed(speedY);
+  }
+  if (Drive == 0) {
     stepperX.setSpeed(0);
+		stepperZ.setSpeed(0);
     stepperY.setSpeed(0);
-    stepperZ.setSpeed(0);
-    stepperA.setSpeed(0);
+		stepperA.setSpeed(0);
   }
   digitalWrite(ENABLE_PIN, EN);
   stepperX.runSpeed();

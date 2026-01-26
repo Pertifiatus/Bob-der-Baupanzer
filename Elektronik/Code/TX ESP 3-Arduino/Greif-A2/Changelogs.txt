@@ -1,0 +1,46 @@
+Greif-A2 Changelogs
+===================
+
+Greif-V3:
+---------
+- Erster vollständiger Sketch für den Greifarm-Arduino
+- Startbyte 0xA2 für die Adressierung
+- 8 Kanäle werden empfangen
+- 4 Stepper-Motoren (X, Y, Z, A) mit AccelStepper
+- "Grab" Modus eingeführt: Motoren laufen nur wenn CH4 aktiviert ist
+- Enable-Steuerung über CH6
+- CH7 als zusätzlicher Override zum Deaktivieren
+- Failsafe mit allen Kanaelen auf 0 bzw. 1000
+- Deadzone für alle 4 Achsen
+
+Greif-V3-T0.2:
+--------------
+- Calibration-Funktion eingebaut! Beim Start muss man die Position kalibrieren
+- "Calibrated" Flag um zu wissen ob kalibriert wurde
+- Während Calibration kann man die Motoren bewegen um die Nullposition zu finden
+- Calibration bestätigen mit CH4 < 500 und CH7 > 500
+- Dann werden alle Stepper-Positionen auf 0 gesetzt
+- vibrateMotor Funktion hinzugefügt (gibt haptisches Feedback bei Speichern)
+- Failsafe-Werte auf 500 (Mittelstellung) geaendert
+- Grab-Bedingung leicht angepasst (CH7 < 500 && CH4 > 500)
+
+Greif-V4:
+---------
+- Stepper-Motoren sinnvoll umbenannt:
+  * stepperX -> Drehachse1X
+  * stepperY -> Gelenk2Y
+  * stepperZ -> Gelenk3Z
+  * stepperA -> Drehachse4A
+- Acceleration für alle Motoren auf 2000 gesetzt (sanfteres Anfahren)
+- vibrateMotor Funktion richtig implementiert (nicht mehr doppelt)
+- Vibration bewegt Motor kurz hin und her als Feedback
+- Calibration-Bug behoben (nur noch einmal definiert)
+
+Greif-V4.1:
+-----------
+- Limit Settings für Motor X hinzugefügt
+
+Greif-V4.2:
+-----------
+- Limit Settings für alle Motoren hinzugefügt
+- Vibrate auch für StepperY hinzugefügt

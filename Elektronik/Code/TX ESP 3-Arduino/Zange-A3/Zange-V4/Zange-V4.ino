@@ -9,15 +9,22 @@ long speedY = 0;
 long speedZ = 0;
 long speedA = 0;
 
-AccelStepper Drehachse1X(AccelStepper::DRIVER, 2, 5);
-AccelStepper Gelenk2Y(AccelStepper::DRIVER, 3, 6);
-AccelStepper Gelenk3Z(AccelStepper::DRIVER, 4, 7);
-AccelStepper Drehachse4A(AccelStepper::DRIVER, 12, 13);
+const long LIMIT_MIN_Gelenk5X = -5000;
+const long LIMIT_MAX_Gelenk5X = 5000;
+const long BREMSZONE_Gelenk5X = 500;
+
+const long LIMIT_MIN_Greifer6Y = -5000;
+const long LIMIT_MAX_Greifer6Y = 5000;
+const long BREMSZONE_Greifer6Y = 500;
+
+AccelStepper Gelenk5X(AccelStepper::DRIVER, 2, 5);
+AccelStepper Greifer6Y(AccelStepper::DRIVER, 3, 6);
+
 int applyDeadzone(int value, int dz) {
   return (abs(value) < dz) ? 0 : value;
 }
 
-const byte ST = 0xA2;
+const byte ST = 0xA3;
 const int NUM_CHANNELS = 8;
 int channels[NUM_CHANNELS];
 String input = "";
@@ -28,19 +35,24 @@ bool failsafeActive = false;
 bool MeineNachricht = false;
 bool Calibrated = false;
 
-void setup() {
-  pinMode(ENABLE_PIN, OUTPUT);
-  Drehachse1X.setMaxSpeed(SPEED); Drehachse1X.setAcceleration(2000); 
-  Gelenk2Y.setMaxSpeed(SPEED); Gelenk2Y.setAcceleration(2000); 
-  Gelenk3Z.setMaxSpeed(SPEED);   Drehachse3Z.setAcceleration(2000); 
-  Drehachse4A.setMaxSpeed(SPEED);  Drehachse4A.setAcceleration(2000); 
 
+void setup() {
+  pinMode(4, OUTPUT);
+  pinMode(ENABLE_PIN, OUTPUT);
+  Gelenk5X.setMaxSpeed(SPEED);
+  Gelenk5X.setAcceleration(2000);
+  Greifer6Y.setMaxSpeed(SPEED);
+  Greifer6Y.setAcceleration(2000);
 
   Serial.begin(115200);
   input.reserve(50);
 
   activateFailsafe();
   lastPacketTime = millis();
+
+  delay(5000);
+  digitalWrite(4, 1);
+  Serial.println("Relais AN");
 
   Calibration();
 }
@@ -57,13 +69,11 @@ void Calibration() {
     }
 
     if (channels[4] < 500 && channels[7] > 500) {
-      Drehachse4A.setCurrentPosition(0);
-      Gelenk3Z.setCurrentPosition(0);
-      Gelenk2Y.setCurrentPosition(0);
-      Drehachse1X.setCurrentPosition(0);
+      Gelenk5X.setCurrentPosition(0);
+      Greifer6Y.setCurrentPosition(0);
       Calibrated = true;
       digitalWrite(ENABLE_PIN, 0);
-      vibrateMotor(Drehachse1X, 10, 2);
+      vibrateMotor(Gelenk5X, 10, 2);
       digitalWrite(ENABLE_PIN, 1);
       Serial.print("Calib-SAVE");
     } else {
@@ -72,18 +82,17 @@ void Calibration() {
     }
   }
 }
+
 void loop() {
   ReadSerial();
   Channellogic();
   Stepper();
 
-  /*
-	static unsigned long lastDebugTime = 0;
+  static unsigned long lastDebugTime = 0;
   if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
     lastDebugTime = millis();
     printDebugInfo();
   }
-	*/
 }
 
 
@@ -129,7 +138,7 @@ void parseBuffer() {
     if (failsafeActive) {
       failsafeActive = false;
     }
-    lastPacketTime = millis();  // Zeitstempel für Timeout-Timer erneuern
+    lastPacketTime = millis();  //  Timeout-Timer erneuern
   }
 }
 
@@ -164,25 +173,18 @@ void Channellogic() {
   speedX = map(channels[0], 0, 1000, -SPEED, SPEED);
   speedX = applyDeadzone(speedX, 200);
 
-
   speedY = map(channels[1], 0, 1000, -SPEED, SPEED);
   speedY = applyDeadzone(speedY, 100);
 
-  speedZ = map(channels[2], 0, 1000, -SPEED, SPEED);
-  speedZ = applyDeadzone(speedZ, 200);
-
-
-  speedA = map(channels[3], 0, 1000, -SPEED, SPEED);
-  speedA = applyDeadzone(speedA, 100);
-
   // Logik für Enable (EN)
-  if (channels[6] < 500) {
-    EN = 0;  // Motor AN
+  if (channels[6] < 500) {  //Falls Channel 6 kleiner 500 ist
+    EN = 0;                 // Motor AN
   } else {
     EN = 1;  // Motor AUS
   }
 
-  if (channels[7] < 500 && channels[4] > 500) {
+
+  if (channels[7] > 500 && channels[4] > 500) {  //Falls Channel 7 großer 500, und Channel 4 großer 500. (Beide Switches gedrückt)
     Grab = 1;
   } else {
     Grab = 0;
@@ -193,46 +195,71 @@ void Channellogic() {
       EN = 0;  // Wenn die Sticks nicht center sind, Motor AN
     }
   }
-  if (channels[6] > 500 && channels[4] > 500) {  // Automatischer Override
+
+  if (channels[6] > 500 && channels[4] < 500) {  // Override, falls Channel gewechselt wird, während sich die Motoren drehen
     EN = 1;
   }
 }
 
 void Stepper() {
-
   if (Grab == 1) {
-    Drehachse1X.setSpeed(speedX);
-    Gelenk2Y.setSpeed(speedY);
-    Gelenk3Z.setSpeed(speedZ);
-    Drehachse4A.setSpeed(speedA);
+    //Bremszone X
+      long currentPosX = Gelenk5X.currentPosition();
+      long finalSpeedX = speedX;
+
+      if (speedX > 0 && (LIMIT_MAX_Gelenk5X - currentPosX) < BREMSZONE_Gelenk5X) {
+        // Bremse Richtung Plus
+        finalSpeedX = speedX * (LIMIT_MAX_Gelenk5X - currentPosX) / BREMSZONE_Gelenk5X;
+
+      } else if (speedX < 0 && (currentPosX - LIMIT_MIN_Gelenk5X) < BREMSZONE_Gelenk5X) {
+        // Bremse Richtung Minus
+        finalSpeedX = speedX * (currentPosX - LIMIT_MIN_Gelenk5X) / BREMSZONE_Gelenk5X;
+      }
+
+      // Not-Stopp Sicherheitscheck
+      if (currentPosX >= LIMIT_MAX_Gelenk5X && speedX > 0) finalSpeedX = 0;
+      if (currentPosX <= LIMIT_MIN_Gelenk5X && speedX < 0) finalSpeedX = 0;
+  
+    //Bremszone Y
+      long currentPosY = Greifer6Y.currentPosition();
+      long finalSpeedY = speedY;
+
+      if (speedY > 0 && (LIMIT_MAX_Greifer6Y - currentPosY) < BREMSZONE_Greifer6Y) {
+        // Bremse Richtung Plus
+        finalSpeedY = speedY * (LIMIT_MAX_Greifer6Y - currentPosY) / BREMSZONE_Greifer6Y;
+
+      } else if (speedY < 0 && (currentPosY - LIMIT_MIN_Greifer6Y) < BREMSZONE_Greifer6Y) {
+        // Bremse Richtung Minus
+        finalSpeedY = speedY * (currentPosY - LIMIT_MIN_Greifer6Y) / BREMSZONE_Greifer6Y;
+      }
+
+      // Not-Stopp Sicherheitscheck
+      if (currentPosY >= LIMIT_MAX_Greifer6Y && speedY > 0) finalSpeedY = 0;
+      if (currentPosY <= LIMIT_MIN_Greifer6Y && speedY < 0) finalSpeedY = 0;
+  
+    Gelenk5X.setSpeed(finalSpeedX);
+    Greifer6Y.setSpeed(finalSpeedY);
+
   } else {
-    Drehachse1X.setSpeed(0);
-    Gelenk2Y.setSpeed(0);
-    Gelenk3Z.setSpeed(0);
-    Drehachse4A.setSpeed(0);
+    Gelenk5X.setSpeed(0);
+    Greifer6Y.setSpeed(0);
   }
   digitalWrite(ENABLE_PIN, EN);
-  Drehachse1X.runSpeed();
-  Gelenk2Y.runSpeed();
-  Gelenk3Z.runSpeed();
-  Drehachse4A.runSpeed();
+  Gelenk5X.runSpeed();
+  Greifer6Y.runSpeed();
 }
 
+
 void vibrateMotor(AccelStepper &stepper, int intensity, int pulses) {
-    // intensity = Schritte pro Richtung (5-20)
-    // pulses = Anzahl Vibrationen (2-5)
 
-    long originalPos = stepper.currentPosition();
+  long originalPos = stepper.currentPosition();
 
-    for (int i = 0; i < pulses; i++) {
-      stepper.moveTo(originalPos + intensity);
-      while (stepper.distanceToGo() != 0) stepper.run();
-
-      stepper.moveTo(originalPos - intensity);
-      while (stepper.distanceToGo() != 0) stepper.run();
-    }
-
-    // Zurück zur Ausgangsposition
-    stepper.moveTo(originalPos);
+  for (int i = 0; i < pulses; i++) {
+    stepper.moveTo(originalPos + intensity);
+    while (stepper.distanceToGo() != 0) stepper.run();
+    stepper.moveTo(originalPos - intensity);
     while (stepper.distanceToGo() != 0) stepper.run();
   }
+  stepper.moveTo(originalPos);
+  while (stepper.distanceToGo() != 0) stepper.run();
+}

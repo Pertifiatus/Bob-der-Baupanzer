@@ -1,0 +1,34 @@
+TX Changelogs
+=============
+
+TX-V0:
+------
+- Erster Test-Sketch für den TX-ESP32
+- CRSF Library eingebunden für Crossfire-Empfaenger
+- RX auf GPIO6, TX auf GPIO5
+- Liest alle 16 Kanäle vom Empfänger
+- Gibt alle Kanäle auf dem Serial Monitor aus
+- TXSerial auf 9600 Baud (noch nicht benutzt)
+- Nur zum Testen ob die CRSF-Verbindung funktioniert
+
+TX-V1:
+------
+- Richtiges Kommunikations-Protokoll eingebaut!
+- Verschiedene Start-Tokens für verschiedene Empfänger:
+  * 0x01 für ESP32 (14 Kanäle)
+  * 0xA1 für Arduino 1 - Motor (7 Kanäle)
+  * 0xA2 für Arduino 2 - Greif (6 Kanäle)
+  * 0xA3 für Arduino 3 - Zange (3 Kanäle)
+- Alle 50ms wird an jeden Empfänger gesendet
+- Werte werden von CRSF (172-1810) auf 0-1000 gemappt
+- constrain() sorgt dafür dass Werte im Bereich bleiben
+- TXSerial auf 115200 Baud, RX=20, TX=21
+
+TX-V2:
+------
+- Kanal-Anzahl für A1 von 7 auf 6 reduziert
+- Kanal-Anzahl für A2 von 6 auf 8 erhöht
+
+TX-V3:
+------
+- Kanal-Anzahl für A3 von 3 auf 8 erhöht
