@@ -6,8 +6,6 @@ int EN = 1;         // 0=Enabled, 1=Disabled
 int Grab = 0;       // Grab Status
 long speedX = 0;
 long speedY = 0;
-long speedZ = 0;
-long speedA = 0;
 
 const long LIMIT_MIN_Gelenk5X = -5000;
 const long LIMIT_MAX_Gelenk5X = 5000;
@@ -191,7 +189,7 @@ void Channellogic() {
   }
 
   if (Grab == 1) {  // Arming in Grab Action
-    if (speedX != 0 || speedY != 0 || speedZ != 0 || speedA != 0) {
+    if (speedX != 0 || speedY != 0) {
       EN = 0;  // Wenn die Sticks nicht center sind, Motor AN
     }
   }
