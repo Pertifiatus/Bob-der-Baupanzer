@@ -54,3 +54,7 @@ Zange-V4:
 --------------
 - Endstops bei den 2 Kanälen hinzugefügt. 
 - Die Schrittmotoren umbenannt
+
+Zange-V4.1:
+--------------
+- StepperCalib hinzuefügt, sodass ich beim Calib keine Limits habe
