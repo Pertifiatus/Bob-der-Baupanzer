@@ -44,3 +44,8 @@ Greif-V4.2:
 -----------
 - Limit Settings für alle Motoren hinzugefügt
 - Vibrate auch für StepperY hinzugefügt
+
+Greif-V4.3:
+-----------
+- Limit Settings Bug behoben. 
+- StepperCalib void hinzugefügt
