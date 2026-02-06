@@ -16,7 +16,6 @@
 
 **Bob der Baupanzer** is a DIY-Roboticsprojekt: A remote controlled tracked vehicle with a controllable arm. It is controllable via ELRS and has 3 analog Cameras which you can change to.
 
-
 ---
 
 ## ✨ Features
@@ -54,7 +53,7 @@
 <td width="50%">
 
 ### Tracks
-- 3D-printes Links
+- 3D-printed Links
 - Robust
 - Steppermotor-driven
 
@@ -72,24 +71,16 @@
   <img src="https://github.com/user-attachments/assets/86cd4f3f-e648-4e8a-aa2a-8e63ad2b47fa" alt="Electronics Bay" width="500"/>
 </p>
 
-| Komponente | Beschreibung |
-|------------|--------------|
-| **Mikrocontroller** | ESP32 (mehrere) |
-| **Motorsteuerung** | DVR8825 Schrittmotortreiber |
-| **Antriebsmotoren** | NEMA17 Schrittmotoren |
-| **Empfänger** | ELRS nano |
-| **Video** | Analog FPV Kameras |
-| **Rahmen** | Aluminium-Profilschienen |
 
-### 3D-Druck Komponenten
+### 3D-Print Components
 
-- **Kettenglieder** – Modulares Design für einfache Reparatur
-- **Kameragehäuse** – Schutz mit Antennenhalterung
-- **Greifarm-Teile** – Gelenke, Halterungen, Greifer
-- **Kabelmanagement** – Gitterstruktur für Elektronikfach
+- **Chain-links** – Muodular design for easy assembly and quick repairs
+- **Video System** – Head-tracked servo gimbal
+- **Robotic-arm** – Joints, Holders, Pliers
+- **Cablemanagement** – Sort of magnetic gridfinity for easy wireing
 
 ---
-## 📸 Galerie
+## 📸 Galery
 
 
 
@@ -107,19 +98,3 @@
 </p>
 
 ---
-
-<p align="center">
-  <b>⭐ Gefällt dir das Projekt? Gib uns einen Star!</b>
-</p>
-
-<p align="center">
-  <a href="https://github.com/Pertifiatus/Bob-der-Baupanzer">
-    <img src="https://img.shields.io/github/stars/Pertifiatus/Bob-der-Baupanzer?style=social" alt="GitHub Stars"/>
-  </a>
-</p>
-
----
-
-<p align="center">
-  <sub>Gebaut mit 🔧 und ☕ von Robotik-Enthusiasten</sub>
-</p>
