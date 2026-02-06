@@ -10,33 +10,12 @@
 <h3 align="center">
   <em>Ein ferngesteuertes Kettenfahrzeug mit Robotergreifarm</em>
 </h3>
-
-<p align="center">
-  <a href="#features">Features</a> •
-  <a href="#hardware">Hardware</a> •
-  <a href="#software">Software</a> •
-  <a href="#aufbau">Aufbau</a> •
-  <a href="#mitwirkende">Mitwirkende</a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Version-0.1.0-blue?style=flat-square" alt="Version"/>
-  <img src="https://img.shields.io/badge/Sprache-C++-00599C?style=flat-square&logo=cplusplus" alt="C++"/>
-  <img src="https://img.shields.io/badge/Steuerung-ELRS-orange?style=flat-square" alt="ELRS"/>
-  <img src="https://img.shields.io/badge/Status-In_Entwicklung-green?style=flat-square" alt="Status"/>
-</p>
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/afbdd32e-d4a2-4625-a960-5286b7bde6eb" alt="Bob der Baupanzer" width="600"/>
-  
-</p>
-
 ---
 
-## 🎯 Was ist Bob?
+## What is Bob?
 
-**Bob der Baupanzer** ist ein DIY-Robotikprojekt: Ein ferngesteuertes Kettenfahrzeug mit montiertem Robotergreifarm. Gesteuert wird Bob über das ExpressLRS-Protokoll mit einem Radiomaster Boxer – präzise, mit niedriger Latenz und bis zu drei Live-Kamerafeeds.
+**Bob der Baupanzer** is a DIY-Roboticsprojekt: A remote controlled tracked vehicle with a controllable arm. It is controllable via ELRS and has 3 analog Cameras which you can change to.
 
-> *"Wir bauen nicht nur einen Panzer – wir bauen BOB."*
 
 ---
 
@@ -46,39 +25,38 @@
 <tr>
 <td width="50%">
 
-### 📡 ELRS-Steuerung
-- Radiomaster Boxer Sender
+### ELRS
+- Radiomaster Boxer Transmitter
 - ExpressLRS 2.4GHz Protokoll
-- Latenz < 10ms
-- Telemetrie-Rückkanal
+- Latency < 10ms
 
 </td>
 <td width="50%">
 
-### 🎥 Multi-Kamera System
-- Bis zu 3 analoge FPV-Kameras
-- 3D-gedruckte Kameragehäuse
-- Front-, Arm- und Heckkamera
-- Echtzeit-Videoübertragung
+### Multi-Camera System
+- 3 analog FPV-Cameras
+- 3D-printed & Head tracked camera gimbal
+- Front-, Arm- and 3rd Person Camera
+- Reltime-Videofeed
 
 </td>
 </tr>
 <tr>
 <td width="50%">
 
-### 🦾 Roboter-Greifarm
-- NEMA17 Schrittmotoren
-- Cycloid Getriebe für Drehmoment
-- NEMA17 unnd NEMA14 gesteuerter Greifer
-- Präzise Positionierung
+### Robotic arm
+- NEMA17 Stepper Motors
+- Cycloid gear for high torque
+- NEMA17 and NEMA14 controlled front
+- Precise positioning
 
 </td>
 <td width="50%">
 
-### ⚙️ Kettenantrieb
-- 3D-gedruckte Kettenglieder
-- Robuste Geländefähigkeit
-- Schrittmotor-Antrieb
+### Tracks
+- 3D-printes Links
+- Robust
+- Steppermotor-driven
 
 </td>
 </tr>
@@ -86,9 +64,9 @@
 
 ---
 
-## 🔧 Hardware
+## Hardware
 
-### Elektronik-Übersicht
+### Electronics-overview
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/86cd4f3f-e648-4e8a-aa2a-8e63ad2b47fa" alt="Electronics Bay" width="500"/>
