@@ -8,7 +8,7 @@
 </h1>
 
 <h3 align="center">
-  <em>Ein ferngesteuertes Kettenfahrzeug mit Robotergreifarm</em>
+  <em>A remote controlled and tracked vehicle with a robotic arm</em>
 </h3>
 ---
 
