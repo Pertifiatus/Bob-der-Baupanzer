@@ -58,3 +58,7 @@ Zange-V4:
 Zange-V4.1:
 --------------
 - StepperCalib hinzuefügt, sodass ich beim Calib keine Limits habe
+
+Zange-V4.2:
+--------------
+Relais floating Pin bug gefixed
