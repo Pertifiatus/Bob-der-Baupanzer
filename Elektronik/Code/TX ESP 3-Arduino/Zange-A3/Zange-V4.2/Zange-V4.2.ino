@@ -35,7 +35,8 @@ bool Calibrated = false;
 
 
 void setup() {
-  pinMode(4, OUTPUT);
+  pinMode(4, OUTPUT); //Relais Pin
+  digitalWrite(4,0);
   pinMode(ENABLE_PIN, OUTPUT);
   Gelenk5X.setMaxSpeed(SPEED);
   Gelenk5X.setAcceleration(2000);
@@ -61,7 +62,7 @@ void Calibration() {
     ReadSerial();
     static unsigned long lastDebugTime = 0;
 
-    if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
+    if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben
       lastDebugTime = millis();
       printDebugInfo();
     }
