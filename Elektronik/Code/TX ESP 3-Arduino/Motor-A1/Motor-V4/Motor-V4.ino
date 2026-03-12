@@ -1,7 +1,7 @@
 #include <AccelStepper.h>
 
 #define ENABLE_PIN 8
-#define SPEED 1300  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
+#define SPEED 2100  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
 int EN = 1;         // 0=Enabled, 1=Disabled
 int Drive = 0;      // Drive Status
 long speedX = 0;
