@@ -49,3 +49,7 @@ Greif-V4.3:
 -----------
 - Limit Settings Bug behoben. 
 - StepperCalib void hinzugefügt
+
+Greif-V4.4:
+-----------
+- Individuelle Geschwindigkeitslimits und Deadzone Fix für alle Motoren
