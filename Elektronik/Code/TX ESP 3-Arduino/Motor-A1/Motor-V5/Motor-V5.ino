@@ -1,11 +1,14 @@
-#include <AccelStepper.h>
+#include <Servo.h>
 
 #define ENABLE_PIN 8
 #define SPEED 180  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
-int EN = 1;         // 0=Enabled, 1=Disabled
-int Drive = 0;      // Drive Status
+int EN = 1;        // 0=Enabled, 1=Disabled
+int Drive = 0;     // Drive Status
 long speedX = 0;
 long speedY = 0;
+
+Servo ESC1;       // create Servo object to control a servo
+int ESC1pos = 0;  // variable to store the servo position
 
 int applyDeadzone(int value, int dz) {
   return (abs(value) < dz) ? 0 : value;
@@ -22,9 +25,13 @@ bool failsafeActive = false;
 bool MeineNachricht = false;
 
 void setup() {
-  pinMode(ENABLE_PIN, OUTPUT);
-  
   Serial.begin(115200);
+
+  ESC1.attach(9);  // attaches the servo on pin 9 to the Servo object
+  ESC1.write(90);
+  Serial.println("Waiting 2s");
+  delay(2000);
+  Serial.println("Waited");
   input.reserve(50);
 
   activateFailsafe();
@@ -34,14 +41,12 @@ void setup() {
 void loop() {
   ReadSerial();
   Channellogic();
-  Stepper();
-  /*
+  ESC();
   static unsigned long lastDebugTime = 0;
   if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
     lastDebugTime = millis();
   printDebugInfo();
   }
-  */
 }
 
 
@@ -115,10 +120,10 @@ void printDebugInfo() {
 }
 
 void Channellogic() {
-  speedX = map(channels[0], 0, 1000, -SPEED, SPEED);
-  speedX = applyDeadzone(speedX, 200);
+  speedX = map(channels[0], 0, 1000, 0, SPEED);
+  speedX = applyDeadzone(speedX, 100);
 
-  speedY = map(channels[1], 0, 1000, -SPEED, SPEED);
+  speedY = map(channels[1], 0, 1000, 0, SPEED);
   speedY = applyDeadzone(speedY, 100);
 
   // Logik für Enable (EN)
@@ -143,23 +148,12 @@ void Channellogic() {
   }
 }
 
-void Stepper() {
+void ESC() {
 
   if (Drive == 1) {
-    stepperX.setSpeed(speedX);
-    stepperZ.setSpeed(speedX);
-    stepperY.setSpeed(speedY);
-    stepperA.setSpeed(speedY);
+    ESC1.write(speedX);
   }
   if (Drive == 0) {
-    stepperX.setSpeed(0);
-		stepperZ.setSpeed(0);
-    stepperY.setSpeed(0);
-		stepperA.setSpeed(0);
+    ESC1.write(90);
   }
-  digitalWrite(ENABLE_PIN, EN);
-  stepperX.runSpeed();
-  stepperY.runSpeed();
-  stepperZ.runSpeed();
-  stepperA.runSpeed();
 }
