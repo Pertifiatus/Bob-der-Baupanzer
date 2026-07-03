@@ -8,7 +8,7 @@ long speedY = 0;
 long speedZ = 0;
 long speedA = 0;
 
-const long MaxSpeedX = 2000;  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
+const long MaxSpeedX = 200;  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
 const long MaxSpeedY = 200;
 const long MaxSpeedZ = 50;
 const long MaxSpeedA = 1500;
