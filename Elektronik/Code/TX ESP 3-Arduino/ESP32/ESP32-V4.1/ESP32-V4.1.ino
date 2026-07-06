@@ -1,0 +1,132 @@
+#include <ESP32Servo.h>
+
+const byte ST = 0x01;
+const int NUM_CHANNELS = 14;
+int channels[NUM_CHANNELS];
+String input = "";
+
+#define RX 14
+#define TX 27
+
+
+#define LED_PIN 33
+#define LED_COUNT 10
+Servo Pitch;
+Servo Sweep;
+Servo video_switcher;
+ESP32PWM pwm;
+
+int LED_HT = 5;
+int CAM;
+
+unsigned long lastStatsTime = 0;
+int goodPackets = 0;
+int incompletePackets = 0;
+int framingErrors = 0;
+
+bool MeineNachricht = false;
+
+void setup() {
+  Serial.begin(115200);
+  ESP32PWM::allocateTimer(0);
+
+  input.reserve(50);
+  Serial2.begin(115200, SERIAL_8N1, RX, TX);
+
+  Pitch.attach(25, 500, 2500);
+  Sweep.attach(26, 500, 2500);
+  video_switcher.attach(32);
+}
+
+void loop() {
+
+  ReadSerial();
+  /*
+  static unsigned long lastDebugTime = 0;
+  if (millis() - lastDebugTime > 200) {
+    lastDebugTime = millis();
+    printDebugInfo();
+  }
+  */
+  Video();
+}
+
+void parseBuffer() {
+  int n = sscanf(input.c_str(), "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d",
+                 &channels[0], &channels[1], &channels[2],
+                 &channels[3], &channels[4], &channels[5], &channels[6],
+                 &channels[7], &channels[8], &channels[9], &channels[10],
+                 &channels[11], &channels[12], &channels[13]);
+
+  if (n == NUM_CHANNELS) {
+    goodPackets++;  // NEU: vollständiges Paket gezählt
+  } else {
+    incompletePackets++;  // NEU: Paket kam an, aber unvollständig/kaputt
+  }
+}
+
+void printDebugInfo() {
+
+  Serial.print(" [OK] - Werte: ");
+
+  for (int i = 0; i < NUM_CHANNELS; i++) {
+    Serial.print(channels[i]);
+    if (i < NUM_CHANNELS - 1) Serial.print(",");
+  }
+    Serial.print("Pakete/s: ");
+    Serial.print(goodPackets);
+    Serial.print("  Unvollstaendig/s: ");
+    Serial.print(incompletePackets);
+    Serial.print("  Framing-Fehler/s: ");
+    Serial.print(framingErrors);
+    goodPackets = 0;
+    incompletePackets = 0;
+    framingErrors = 0;
+  Serial.println();
+}
+
+void ReadSerial() {
+  while (Serial2.available() > 0) {  //Wenn Serielle Daten verfügbar sind
+    byte incomingByte = Serial2.read();
+
+    if (incomingByte == ST) {  //Falls Startbyte erkannt wird: input zurücksetzen
+      input = "";
+      MeineNachricht = true;  //Setze die MeineNachricht Variable auf True
+    } else if (incomingByte > 0x80) {
+      if (MeineNachricht) framingErrors++;  // NEU: Paket wurde mittendrin abgebrochen
+      MeineNachricht = false;
+    }
+
+    else if (MeineNachricht) {
+      if (incomingByte == '\n') {
+        parseBuffer();
+        MeineNachricht = false;
+        break;
+      } else if (input.length() < 80) {
+        input += (char)incomingByte;
+      } else {
+        framingErrors++;  // NEU: Paket zu lang -> verworfen
+        MeineNachricht = false;
+        input = "";
+      }
+    }
+  }
+}
+
+void Video() {
+  //Head Tracker
+  Pitch.write(map(channels[9], 0, 1000, 0, 180));
+  Sweep.write(map(channels[10], 0, 1000, 0, 180));
+
+  //Video Switcher
+  CAM = map(channels[8], 0, 1000, 1, 3);
+  if (CAM == 1) {
+    video_switcher.writeMicroseconds(1000);
+  }
+  if (CAM == 2) {
+    video_switcher.writeMicroseconds(1500);
+  }
+  if (CAM == 3) {
+    video_switcher.writeMicroseconds(2000);
+  }
+}
