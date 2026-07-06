@@ -19,23 +19,20 @@ ESP32PWM pwm;
 int LED_HT = 5;
 int CAM;
 
-unsigned long lastStatsTime = 0;
-int goodPackets = 0;
-int incompletePackets = 0;
-int framingErrors = 0;
-
 bool MeineNachricht = false;
 
+
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(250000);
   ESP32PWM::allocateTimer(0);
 
   input.reserve(50);
-  Serial2.begin(115200, SERIAL_8N1, RX, TX);
+  Serial2.begin(250000, SERIAL_8N1, RX, TX);
 
   Pitch.attach(25, 500, 2500);
   Sweep.attach(26, 500, 2500);
   video_switcher.attach(32);
+
 }
 
 void loop() {
@@ -57,12 +54,6 @@ void parseBuffer() {
                  &channels[3], &channels[4], &channels[5], &channels[6],
                  &channels[7], &channels[8], &channels[9], &channels[10],
                  &channels[11], &channels[12], &channels[13]);
-
-  if (n == NUM_CHANNELS) {
-    goodPackets++;  // NEU: vollständiges Paket gezählt
-  } else {
-    incompletePackets++;  // NEU: Paket kam an, aber unvollständig/kaputt
-  }
 }
 
 void printDebugInfo() {
@@ -73,15 +64,6 @@ void printDebugInfo() {
     Serial.print(channels[i]);
     if (i < NUM_CHANNELS - 1) Serial.print(",");
   }
-    Serial.print("Pakete/s: ");
-    Serial.print(goodPackets);
-    Serial.print("  Unvollstaendig/s: ");
-    Serial.print(incompletePackets);
-    Serial.print("  Framing-Fehler/s: ");
-    Serial.print(framingErrors);
-    goodPackets = 0;
-    incompletePackets = 0;
-    framingErrors = 0;
   Serial.println();
 }
 
@@ -93,7 +75,6 @@ void ReadSerial() {
       input = "";
       MeineNachricht = true;  //Setze die MeineNachricht Variable auf True
     } else if (incomingByte > 0x80) {
-      if (MeineNachricht) framingErrors++;  // NEU: Paket wurde mittendrin abgebrochen
       MeineNachricht = false;
     }
 
@@ -102,12 +83,8 @@ void ReadSerial() {
         parseBuffer();
         MeineNachricht = false;
         break;
-      } else if (input.length() < 80) {
-        input += (char)incomingByte;
       } else {
-        framingErrors++;  // NEU: Paket zu lang -> verworfen
-        MeineNachricht = false;
-        input = "";
+        input += (char)incomingByte;
       }
     }
   }

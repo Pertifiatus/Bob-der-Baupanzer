@@ -23,10 +23,16 @@ bool DebugMode = false;
 
 void setup() {
 
-  Serial.begin(115200);
+  Serial.begin(250000);
   crossfire.begin();
 
-  TXSerial.begin(115200, SERIAL_8N1, 20, 21);  // RX = 20 , TX = 21
+  TXSerial.begin(250000, SERIAL_8N1, 20, 21);  // RX = 20 , TX = 21
+
+  unsigned long jetzt = millis();
+  lastSendESP = jetzt;
+  lastSendA1 = jetzt - 12;
+  lastSendA2 = jetzt - 25;
+  lastSendA3 = jetzt - 37;
 }
 
 void loop() {
@@ -34,7 +40,7 @@ void loop() {
 
   if (!receiverConnected()) return;
   if (!DebugMode) {
-    if (millis() - lastSendESP >= 50) {
+    if (millis() - lastSendESP >= 50 && TXSerial.availableForWrite() > 80) {
       lastSendESP = millis();
       sendESP();
     }
