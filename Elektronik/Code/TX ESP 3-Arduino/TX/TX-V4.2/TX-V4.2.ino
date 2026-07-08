@@ -14,7 +14,7 @@ bool receiverConnected() {
            crossfire.read(2) == 0 && crossfire.read(3) == 0 && crossfire.read(4) == 0 && crossfire.read(5) == 0 && crossfire.read(6) == 0);
 }
 
-const byte ST_ESP = 0x01;  // Start-Token für ESP32
+const byte ST_ESP = 0xA0;  // Start-Token für ESP32
 const byte ST_A1 = 0xA1;   // Start-Token für Arduino Nr. 1
 const byte ST_A2 = 0xA2;   // Start-Token für Arduino Nr. 2
 const byte ST_A3 = 0xA3;   // Start-Token für Arduino Nr. 3
@@ -30,8 +30,8 @@ void setup() {
   unsigned long jetzt = millis();
   lastSendESP = jetzt;
   lastSendA1 = jetzt - 20;
-  lastSendA2 = jetzt - 30;
-  lastSendA3 = jetzt - 40;
+  lastSendA2 = jetzt - 28;
+  lastSendA3 = jetzt - 36;
 }
 
 void loop() {
@@ -43,20 +43,18 @@ void loop() {
       lastSendESP = millis();
       sendESP();
     }
-    /*
-    if (millis() - lastSendA1 >= 50) {
+    if (millis() - lastSendA1 >= 50 && TXSerial.availableForWrite() > 40) {
       lastSendA1 = millis();
       sendA1();
     }
-    if (millis() - lastSendA2 >= 50) {
+    if (millis() - lastSendA2 >= 50 && TXSerial.availableForWrite() > 40) {
       lastSendA2 = millis();
       sendA2();
     }
-    if (millis() - lastSendA3 >= 50) {
+    if (millis() - lastSendA3 >= 50 && TXSerial.availableForWrite() > 40) {
       lastSendA3 = millis();
       sendA3();
     }
-    */
   }
   if (DebugMode) {
     for (int i = 1; i < 17; i++) {
