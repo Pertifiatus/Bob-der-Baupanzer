@@ -6,14 +6,14 @@ int Grab = 0;  // Grab Status
 long speedX = 0;
 long speedY = 0;
 
-const long MaxSpeed = 400;  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
+const long MaxSpeed = 4000;  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
 
-const long LIMIT_MIN_Gelenk5X = -5000;
-const long LIMIT_MAX_Gelenk5X = 5000;
+const long LIMIT_MIN_Gelenk5X = -50000;
+const long LIMIT_MAX_Gelenk5X = 50000;
 const long BREMSZONE_Gelenk5X = 500;
 
-const long LIMIT_MIN_Greifer6Y = -5000;
-const long LIMIT_MAX_Greifer6Y = 5000;
+const long LIMIT_MIN_Greifer6Y = -50000;
+const long LIMIT_MAX_Greifer6Y = 50000;
 const long BREMSZONE_Greifer6Y = 500;
 
 AccelStepper Gelenk5X(AccelStepper::DRIVER, 2, 5);
