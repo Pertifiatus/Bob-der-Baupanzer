@@ -22,6 +22,9 @@ int CAM;
 
 bool MeineNachricht = false;
 
+unsigned int packetCount = 0;
+unsigned int packetsPerSecond = 0;
+
 LiquidCrystal_I2C lcd(0x27, 20, 4);  // set the LCD address to 0x27 for a 20 chars and 4 line display
 
 void setup() {
@@ -48,6 +51,13 @@ void loop() {
   if (millis() - lastDisplayTime > 200) {
     lastDisplayTime = millis();
     updateDisplay();
+  }
+
+  static unsigned long lastPacketRateTime = 0;
+  if (millis() - lastPacketRateTime >= 1000) {
+    lastPacketRateTime = millis();
+    packetsPerSecond = packetCount;
+    packetCount = 0;
   }
 
   /*
@@ -83,7 +93,13 @@ void Video() {
 
 void updateDisplay() {
   lcd.setCursor(0, 0);
-  lcd.print("Channels Monitor:");
+  lcd.print("Ch:");
+
+  // Paket-Rate rechts in der ersten Zeile anzeigen
+  char pktBuf[9];
+  snprintf(pktBuf, sizeof(pktBuf), "Pk/s:%3u", packetsPerSecond > 999 ? 999 : packetsPerSecond);
+  lcd.setCursor(20 - (sizeof(pktBuf) - 1), 0);
+  lcd.print(pktBuf);
 
   // Erste Zeile mit Channels
   for (int I = 0; I <= 6; I++) {
@@ -98,7 +114,7 @@ void updateDisplay() {
   }
 
   // Dritte Zeile mit Channels
-  for (int I = 13; I <= 15; I++) {
+  for (int I = 13; I <= 13; I++) {
     lcd.setCursor((I-13) * 3, 3);
     lcd.print(map(channels[I], 0, 1000, 0, 10));
   }
@@ -114,6 +130,8 @@ void parseBuffer() {
     //Frame verwerfen, da nicht alle Kanäle angekommen oder kaputt sind
     return;
   }
+
+  packetCount++;
 }
 
 void printDebugInfo() {
