@@ -104,19 +104,19 @@ void updateDisplay() {
   // Erste Zeile mit Channels
   for (int I = 0; I <= 6; I++) {
     lcd.setCursor(I * 3, 1);
-    lcd.print(map(channels[I], 0, 1000, 0, 10));
+    lcd.print(map(channels[I], 0, 1000, 0, 9));
   }
 
   // Zweite Zeile mit Channels
   for (int I = 7; I <= 12; I++) {
     lcd.setCursor((I-7) * 3, 2);
-    lcd.print(map(channels[I], 0, 1000, 0, 10));
+    lcd.print(map(channels[I], 0, 1000, 0, 9));
   }
 
   // Dritte Zeile mit Channels
   for (int I = 13; I <= 13; I++) {
     lcd.setCursor((I-13) * 3, 3);
-    lcd.print(map(channels[I], 0, 1000, 0, 10));
+    lcd.print(map(channels[I], 0, 1000, 0, 9));
   }
 }
 

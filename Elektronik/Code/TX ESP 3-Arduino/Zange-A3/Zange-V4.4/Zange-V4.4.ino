@@ -171,8 +171,8 @@ void printDebugInfo() {
 }
 
 void Channellogic() {
-  speedX = map(channels[1], 0, 1000, -MaxSpeed, MaxSpeed) + map(channels[3], 0, 1000, MaxSpeed, -MaxSpeed);
-  speedY = map(channels[1], 0, 1000, MaxSpeed, -MaxSpeed) + map(channels[3], 0, 1000, MaxSpeed, -MaxSpeed);
+  speedX = map(channels[1], 0, 1000, -MaxSpeed, MaxSpeed) + map(channels[2], 0, 1000, MaxSpeed, -MaxSpeed);
+  speedY = map(channels[1], 0, 1000, MaxSpeed, -MaxSpeed) + map(channels[2], 0, 1000, MaxSpeed, -MaxSpeed);
   speedX = applyDeadzone(speedX, MaxSpeed * 0.1);
   speedY = applyDeadzone(speedY, MaxSpeed * 0.1);
 
