@@ -1,0 +1,1 @@
+Erstelle bei jeder größeren Änderung am Programmcode eine neue Version. Wenn es nur kleinere Änderungen sind kannst du auch eine unterversion erstellen. Bei jeder Bahnbrechenden änderung was die Programmcodes untereinander inkompatibel machen würde eine ganze neue Version erstellen. 
