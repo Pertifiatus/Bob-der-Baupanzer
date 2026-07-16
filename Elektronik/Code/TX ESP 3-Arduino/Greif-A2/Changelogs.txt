@@ -53,3 +53,12 @@ Greif-V4.3:
 Greif-V4.4:
 -----------
 - Individuelle Geschwindigkeitslimits und Deadzone Fix für alle Motoren
+
+Greif-V5.3:
+-----------
+- Homing()-Funktion hinzugefügt (analog zur Zange, aber ohne Differenzial):
+  bei CH7 > 500 und CH4 < 500 fahren alle vier Achsen einzeln mit eigener
+  Homing-Geschwindigkeit (HomingSpeedX/Y/Z/A) zurueck auf Position 0, mit
+  Bremszone kurz davor (nutzt die bestehenden BREMSZONE-Werte) und
+  Toleranzband (HomingToleranz), in dem eine Achse als "daheim" gilt
+- loop() ruft bei aktivem Homing() nicht mehr zusaetzlich Stepper() auf
