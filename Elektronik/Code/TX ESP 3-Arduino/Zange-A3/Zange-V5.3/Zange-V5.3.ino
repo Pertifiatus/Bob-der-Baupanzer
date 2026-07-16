@@ -10,9 +10,9 @@ const long MaxSpeedKipp = 600;    //SPEED... I am SPEED... Faster than fast quic
 const long MaxSpeedGreif = 7000;  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
 const long MaxSpeedMotor = MaxSpeedKipp + MaxSpeedGreif;  // Motor sieht im schlechtesten Fall die Summe beider Anteile
 
-const long LIMIT_MIN_Gelenk5X = -50000;
-const long LIMIT_MAX_Gelenk5X = 50000;
-const long BREMSZONE_Gelenk5X = 500;
+const long LIMIT_MIN_Gelenk5X = -2500;
+const long LIMIT_MAX_Gelenk5X = 2500;
+const long BREMSZONE_Gelenk5X = 200;
 
 const long LIMIT_MIN_Greifer6Y = -50000;
 const long LIMIT_MAX_Greifer6Y = 50000;
@@ -82,7 +82,7 @@ void Calibration() {
       Greifer6Y.setCurrentPosition(0);
       Calibrated = true;
       digitalWrite(ENABLE_PIN, 0);
-      vibrateMotor(Gelenk5X, 10, 2);
+      vibrateMotor(Gelenk5X, 20, 2);
       digitalWrite(ENABLE_PIN, 1);
       Serial.print("Calib-SAVE");
     } else {

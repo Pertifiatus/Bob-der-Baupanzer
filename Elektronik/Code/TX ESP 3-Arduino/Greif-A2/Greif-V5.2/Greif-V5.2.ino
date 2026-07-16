@@ -230,7 +230,7 @@ void Channellogic() {
   speedA = applyDeadzone(speedA, MaxSpeedA * 0.1);
 
   // Logik für Enable (EN)
-  if (channels[6] < 500) {
+  if (channels[5] < 500) {
     EN = 0;  // Motor AN
   } else {
     EN = 1;  // Motor AUS
