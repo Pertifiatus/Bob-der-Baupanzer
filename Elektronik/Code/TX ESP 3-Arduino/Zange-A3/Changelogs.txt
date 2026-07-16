@@ -62,3 +62,20 @@ Zange-V4.1:
 Zange-V4.2:
 --------------
 Relais floating Pin bug gefixed
+
+Zange-V5.4:
+--------------
+- Limits/Bremszonen umgestellt auf die logischen Kipp- und Greif-Achsen
+  statt auf die rohen Motor-Positionen (Gelenk5X/Greifer6Y)
+- Grund: Beide Motoren treiben zusammen ein Differenzial an, jeder
+  Motorschritt ist eine Mischung aus Kipp- und Greif-Bewegung
+  (X = Kipp+Greif, Y = -Kipp+Greif). Die alten Limits pro Motor haben
+  dadurch nicht mehr die tatsaechliche Achsposition abgebildet.
+- Kipp-Achse und Greif-Achse haben jetzt eigene LIMIT_MIN/MAX und
+  BREMSZONE-Werte, die tatsaechliche Position wird per Differenzial-
+  Kinematik aus beiden Motorpositionen zurueckgerechnet
+- Homing()-Funktion vervollständigt: bei CH7 > 500 und CH4 < 500 fahren
+  beide Achsen mit eigener Homing-Geschwindigkeit (HomingSpeedKipp/
+  HomingSpeedGreif) zurueck auf Position 0, mit Bremszone kurz davor
+  und Toleranzband (HomingToleranz), in dem die Achse als "daheim" gilt
+- loop() ruft bei aktivem Homing() nicht mehr zusaetzlich Stepper() auf
