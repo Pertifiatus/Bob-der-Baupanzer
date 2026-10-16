@@ -36,3 +36,22 @@ TX-V3:
 TX-V4:
 ------
 - "Failsave Modus" hinzugefügt, wenn alle Kanäle auf 0 sind, sendet der ESP keine Daten mehr an die Geräte, sodass diese in den    Failsave Modus gehen, anstatt alle Motoren schnell zu drehen
+
+TX-V5.2:
+--------
+- CRSF-Library überarbeitet (kompatibel, gleiche read()/update()-Funktionen):
+  * Wartet auf Sync-Byte (0xC8) statt jeden Byte-Anfang als Frame zu nehmen
+    -> kein dauerhaftes "Verrutschen" mehr nach einem verlorenen Byte
+  * Längen-Byte wird geprüft, CRC8 (Polynom 0xD5) wird geprüft -> kaputte
+    Frames werden verworfen statt als Kanalwerte durchzugehen
+  * Kanal-Frame nur noch bei korrekter Länge (24) dekodiert (vorher "< 14")
+  * Link-Statistik (Frame 0x14) wird ausgelesen: LQ, RSSI, SNR, TX-Power ...
+  * Neue Funktionen: isLinkUp(), msSinceLastChannels(), linkQuality(),
+    rssi(), snr(), linkStats(), crcErrors()
+- Failsafe neu: statt "alle Kanäle == 0" jetzt Timeout (250 ms ohne gültigen
+  Kanal-Frame) oder LQ == 0. Der alte Check hat nach einem Verbindungsverlust
+  NIE ausgelöst, weil die letzten Kanalwerte stehen geblieben sind.
+- Optional LQ_MIN für Failsafe bei schlechter Verbindung
+- Debug-Ausgabe zeigt LQ/RSSI/SNR/CRC-Fehler, ist auf 200 ms gedrosselt und
+  läuft auch im Failsafe
+- Protokoll zu ESP32/A1/A2/A3 unverändert -> Boards brauchen kein Update
