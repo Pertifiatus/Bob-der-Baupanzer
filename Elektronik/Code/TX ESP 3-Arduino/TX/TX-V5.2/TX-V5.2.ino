@@ -124,7 +124,6 @@ void printDebug() {
 
 // Kodiert und sendet einen Kanal-Frame im Binärprotokoll.
 // Format: [Start-Byte][2 Bytes je Kanal][1 Prüfsummen-Byte]
-// (unverändert zu V5.1 - die Boards brauchen kein Update)
 void sendChannelFrame(byte startToken, int channelCount) {
   TXSerial.write(startToken);
 
