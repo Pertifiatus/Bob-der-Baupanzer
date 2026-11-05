@@ -110,13 +110,11 @@ void loop() {
   if (!Homing()) {
     Stepper();
   }
-  /*
   static unsigned long lastDebugTime = 0;
   if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
     lastDebugTime = millis();
     printDebugInfo();
   }
-  */
 }
 
 

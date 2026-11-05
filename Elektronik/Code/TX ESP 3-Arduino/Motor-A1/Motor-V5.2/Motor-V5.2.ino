@@ -1,14 +1,9 @@
-#include <Servo.h>
+#define Maxrpm 180  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
+#define PinDriverF 5
+#define PinDriverR 6
 
-#define ENABLE_PIN 8
-#define SPEED 180  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
-int EN = 1;        // 0=Enabled, 1=Disabled
-int Drive = 0;     // Drive Status
-long speedX = 0;
-long speedY = 0;
-
-Servo ESC1;       // create Servo object to control a servo
-int ESC1pos = 0;  // variable to store the servo position
+int Drive = 0;  // Drive Status
+long Speed = 0;
 
 int applyDeadzone(int value, int dz) {
   return (abs(value) < dz) ? 0 : value;
@@ -20,26 +15,19 @@ int channels[NUM_CHANNELS];
 
 unsigned long lastPacketTime = 0;
 const unsigned long TimeoutFailsafe = 500;
-bool failsafeActive = false;
+bool failsafeActive = true;
 
-// Binärprotokoll: pro Kanal 2 Bytes (low/high, je auf 7 Bit begrenzt), damit
-// alle Nutzdaten-Bytes < 0x80 bleiben - nur die Start-Bytes der Boards
-// (0xA0-0xA3) haben Bit 7 gesetzt und sind so immer eindeutig vom Kanalwert
-// zu unterscheiden. Dadurch ist die Frame-Länge konstant, egal ob die Kanäle
-// bei 0 oder bei 1000 stehen.
 const int FRAME_PAYLOAD_LEN = NUM_CHANNELS * 2;
 byte frameBuffer[FRAME_PAYLOAD_LEN];
 int frameIndex = 0;
 bool receivingFrame = false;
 
 void setup() {
-  Serial.begin(115200);
-
-  ESC1.attach(9);  // attaches the servo on pin 9 to the Servo object
-  ESC1.write(90);
-  Serial.println("Waiting 2s");
-  delay(2000);
-  Serial.println("Waited");
+  Serial.begin(250000);
+  pinMode(PinDriverF, OUTPUT);
+  pinMode(PinDriverR, OUTPUT);
+  digitalWrite(PinDriverF, 0);
+  digitalWrite(PinDriverR, 0);
 
   activateFailsafe();
   lastPacketTime = millis();
@@ -48,12 +36,12 @@ void setup() {
 void loop() {
   ReadSerial();
   Channellogic();
-  ESC();
   static unsigned long lastDebugTime = 0;
   if (millis() - lastDebugTime > 100) {  // Nur alle 100ms Text ausgeben (schont die CPU)
     lastDebugTime = millis();
-  printDebugInfo();
+    printDebugInfo();
   }
+  Motor();
 }
 
 
@@ -148,40 +136,36 @@ void printDebugInfo() {
 }
 
 void Channellogic() {
-  speedX = map(channels[0], 0, 1000, 0, SPEED);
-  speedX = applyDeadzone(speedX, 100);
-
-  speedY = map(channels[1], 0, 1000, 0, SPEED);
-  speedY = applyDeadzone(speedY, 100);
-
-  // Logik für Enable (EN)
-  if (channels[5] < 500) {
-    EN = 0;  // Motor AN
-  } else {
-    EN = 1;  // Motor AUS
-  }
+  Speed = map(channels[0], 0, 1000, -255, 255);
+  Speed = applyDeadzone(Speed, 5);
 
   if (channels[4] < 500) {
     Drive = 1;
   } else {
     Drive = 0;
   }
-  if (Drive == 1) {  // Arming in Drive Action
-    if (speedX != 0 || speedY != 0) {
-      EN = 0;  // Wenn die Sticks nicht center sind, Motor AN
-    }
-  }
-  if (channels[5] > 500 && channels[4] > 500) {
-    EN = 1;
-  }
 }
 
-void ESC() {
+void Motor() {
 
   if (Drive == 1) {
-    ESC1.write(speedX);
-  }
-  if (Drive == 0) {
-    ESC1.write(90);
+    if (Speed != 0) {
+      if (Speed > 0) {
+        analogWrite(PinDriverF, Speed);
+        analogWrite(PinDriverR, 0);
+      }
+      if (Speed < 0) {
+        analogWrite(PinDriverF, 0);
+        analogWrite(PinDriverR, -Speed);
+      }
+
+    } else {
+      analogWrite(PinDriverF, 0);
+      analogWrite(PinDriverR, 0);
+    }
+
+  } else {
+    analogWrite(PinDriverF, 0);
+    analogWrite(PinDriverR, 0);
   }
 }
