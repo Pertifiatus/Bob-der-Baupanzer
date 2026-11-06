@@ -1,32 +1,53 @@
 #include <Wire.h>
 #include <AS5600.h>
 
-#define Maxrpm 180  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
-#define PinDriverF 5
-#define PinDriverR 6
-#define intervall 100
-#define Debug true
+//#define Maxrpm 180  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
+#define PinDriverF 5  //Pin für die Motortreiber PWM Vorwerts
+#define PinDriverR 6  //Pin für die Motortreiber PWM Rückwerts
 
+#define intervall 100  //Intervall für die Debug ausgabe
+#define Debug false     //Debug Ausgabe an/aus
+
+//--------------------------------------------------------
 int Drive = 0;  // Drive/Enabled Status
-long Speed = 0;
+int TopSpeed = 85;
+int ErwuenschteSpeed = 0;
+int regelDifferenz = 0;
 float rpm = 0;
 float raw = 0;
 
-const byte ST = 0xA1;  //Startbyte des Drive Arduinos
-const int NUM_CHANNELS = 6;
-int channels[NUM_CHANNELS];
+AS5600 as5600;           //Sensor "erstellen"
+#define Trustfaktor 0.4  //Wie sehr wir den Sensorwerten vertrauen. 0,5 viel. 0,1 langsam
+//--------------------------------------------------------
+// Faktoren hier zum Tunen ändern
+float PFaktor = 5;
+float IFaktor = 7;
+float FFaktor = 1.4;
+//--------------------------------------------------------
 
+int Gas = 0;
+int Pr = 0;
+int Ir = 0;
+//--------------------------------------------------------
+
+unsigned long t_alt = 0;
+unsigned long t_neu = 0;
+float summe = 0;
+//--------------------------------------------------------
+
+const byte ST = 0xA1;        //Startbyte des Drive Arduinos
+const int NUM_CHANNELS = 6;  //Channels welche Empfangen werden sollen
+int channels[NUM_CHANNELS];
 unsigned long lastDebugTime = 0;
 unsigned long lastPacketTime = 0;
-const unsigned long TimeoutFailsafe = 500;
+const unsigned long TimeoutFailsafe = 500;  //Timeout nach welchem der Arduino in den Failsave Modus wechselt
 bool failsafeActive = true;
-
 const int FRAME_PAYLOAD_LEN = NUM_CHANNELS * 2;
 byte frameBuffer[FRAME_PAYLOAD_LEN];
 int frameIndex = 0;
 bool receivingFrame = false;
 
-AS5600 as5600;
+//--------------------------------------------------------
 
 int applyDeadzone(int value, int dz) {
   return (abs(value) < dz) ? 0 : value;
@@ -38,16 +59,15 @@ void setup() {
   Wire.setClock(400000);
   as5600.begin();
   as5600.setDirection(AS5600_COUNTERCLOCK_WISE);
+  //--------------------------------------------------------
 
   pinMode(PinDriverF, OUTPUT);
   pinMode(PinDriverR, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(PinDriverF, 0);
   digitalWrite(PinDriverR, 0);
-
-
+  //-------------------------------------------------------- Super duper viel Stuff damit falls der Sensor nicht verbunden ist wir nicht crashout gehen :)
   activateFailsafe();
-
   while (!as5600.isConnected()) {
     digitalWrite(LED_BUILTIN, 1);
   }
@@ -58,25 +78,130 @@ void setup() {
     digitalWrite(LED_BUILTIN, 0);
     delay(500);
   }
+  //--------------------------------------------------------
 
   lastPacketTime = millis();
 }
 
 void loop() {
+  t_neu = millis();
   ReadSerial();
   Channellogic();
-  Motor();
-  ReadRPM();
-  if(Debug)printDebugInfo();
+  Fahren();
+  if (Debug) printDebugInfo();
+  t_alt = t_neu;
 }
+
+void Fahren() {
+  ReadRPM();
+
+  regelDifferenz = ErwuenschteSpeed - rpm;
+
+  CalculateP();
+  CalculateI();
+  CalculatePI();
+  Motor();
+}
+
+
+void printDebugInfo() {
+  if (millis() - lastDebugTime > intervall) {
+    lastDebugTime = millis();
+    if (failsafeActive) {
+      Serial.print(" [!] - Fallback: ");
+    } else {
+      Serial.print(" [OK] - Werte: ");
+    }
+
+    for (int i = 0; i < NUM_CHANNELS; i++) {
+      Serial.print(channels[i]);
+      if (i < NUM_CHANNELS - 1) Serial.print(",");
+    }
+    Serial.print("  RPM");
+    Serial.print(rpm);
+    Serial.print("  Gas");
+    Serial.print(Gas);
+    Serial.print("  PFaktor");
+    Serial.print(Pr);
+    Serial.print("  IFaktor");
+    Serial.print(Ir);
+    Serial.println();
+  }
+}
+
+void Channellogic() {
+  ErwuenschteSpeed = map(channels[0], 0, 1000, -TopSpeed, TopSpeed);
+  ErwuenschteSpeed = applyDeadzone(ErwuenschteSpeed, TopSpeed * 0.15);
+
+  if (channels[4] < 500) {
+    Drive = 1;
+  } else {
+    Drive = 0;
+  }
+}
+
+void Motor() {
+
+  if (Drive == 1) {
+    if (Gas != 0) {
+      if (Gas > 0) {
+        analogWrite(PinDriverF, Gas);
+        analogWrite(PinDriverR, 0);
+      }
+      if (Gas < 0) {
+        analogWrite(PinDriverF, 0);
+        analogWrite(PinDriverR, -Gas);
+      }
+
+    } else {
+      analogWrite(PinDriverF, 0);
+      analogWrite(PinDriverR, 0);
+    }
+
+  } else {
+    analogWrite(PinDriverF, 0);
+    analogWrite(PinDriverR, 0);
+  }
+}
+
+//--------------------------------------------------------
 
 void ReadRPM() {
   static unsigned long last = 0;
   if (millis() - last < 10) return;  // feste 10 ms Abtastung
   last = millis();
   raw = as5600.getAngularSpeed(AS5600_MODE_RPM);
-  rpm = 0.8 * rpm + 0.2 * raw;  // Tiefpassfilter
+  rpm = (1 - Trustfaktor) * rpm + Trustfaktor * raw;  // Tiefpassfilter
 }
+
+void CalculateP() {
+  Pr = constrain(regelDifferenz * PFaktor, -255, 255);
+}
+
+void CalculateI() {
+  if (Drive == 0 || ErwuenschteSpeed == 0) summe = 0;
+  float dt = (t_neu - t_alt) / 1000.0;
+  summe += regelDifferenz * dt;
+  summe = constrain(summe, -255.0 / IFaktor, 255.0 / IFaktor);
+  Ir = IFaktor * summe;
+}
+
+void CalculatePI() {
+  int Vorsteuerung = FFaktor * ErwuenschteSpeed;
+  Gas = constrain(Pr + Ir + Vorsteuerung, -255, 255);
+}
+
+void activateFailsafe() {
+  // Sicherheitswerte definieren (z.B. alles auf 0)
+  channels[0] = 500;
+  channels[1] = 500;
+  channels[2] = 500;
+  channels[3] = 500;
+  channels[4] = 1000;
+  channels[5] = 1000;
+}
+
+//--------------------------------------------------------
 
 void ReadSerial() {
   while (Serial.available() > 0) {  //Wenn Serielle Daten verfügbar sind
@@ -113,7 +238,6 @@ void ReadSerial() {
     }
   }
 }
-
 // Prüft die Prüfsumme und übernimmt bei Erfolg die Kanalwerte aus frameBuffer.
 void decodeFrame(byte receivedChecksum) {
   byte checksum = 0;
@@ -142,68 +266,4 @@ void decodeFrame(byte receivedChecksum) {
     failsafeActive = false;
   }
   lastPacketTime = millis();  // Zeitstempel für Timeout-Timer erneuern
-}
-
-void activateFailsafe() {
-  // Sicherheitswerte definieren (z.B. alles auf 0)
-  channels[0] = 500;
-  channels[1] = 500;
-  channels[2] = 500;
-  channels[3] = 500;
-  channels[4] = 0;
-  channels[5] = 1000;
-}
-
-void printDebugInfo() {
-  if (millis() - lastDebugTime > intervall) {
-    lastDebugTime = millis();
-    if (failsafeActive) {
-      Serial.print(" [!] - Fallback: ");
-    } else {
-      Serial.print(" [OK] - Werte: ");
-    }
-
-    for (int i = 0; i < NUM_CHANNELS; i++) {
-      Serial.print(channels[i]);
-      if (i < NUM_CHANNELS - 1) Serial.print(",");
-    }
-    Serial.print("  RPM");
-    Serial.print(rpm);
-    Serial.println();
-  }
-}
-
-void Channellogic() {
-  Speed = map(channels[0], 0, 1000, -255, 255);
-  Speed = applyDeadzone(Speed, 10);
-
-  if (channels[4] < 500) {
-    Drive = 1;
-  } else {
-    Drive = 0;
-  }
-}
-
-void Motor() {
-
-  if (Drive == 1) {
-    if (Speed != 0) {
-      if (Speed > 0) {
-        analogWrite(PinDriverF, Speed);
-        analogWrite(PinDriverR, 0);
-      }
-      if (Speed < 0) {
-        analogWrite(PinDriverF, 0);
-        analogWrite(PinDriverR, -Speed);
-      }
-
-    } else {
-      analogWrite(PinDriverF, 0);
-      analogWrite(PinDriverR, 0);
-    }
-
-  } else {
-    analogWrite(PinDriverF, 0);
-    analogWrite(PinDriverR, 0);
-  }
 }
