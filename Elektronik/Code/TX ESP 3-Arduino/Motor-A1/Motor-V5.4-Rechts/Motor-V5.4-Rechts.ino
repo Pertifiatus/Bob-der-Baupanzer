@@ -1,5 +1,6 @@
 #include <Wire.h>
 #include <AS5600.h>
+#include <PPMReader.h>
 
 //#define Maxrpm 180  //SPEED... I am SPEED... Faster than fast quicker than quick... I am lightning
 #define PinDriverF 5  //Pin für die Motortreiber PWM Vorwerts
@@ -9,12 +10,15 @@
 #define Debug false     //Debug Ausgabe an/aus
 
 //--------------------------------------------------------
-int Drive = 0;  // Drive/Enabled Status
+bool Drive = false;  // Drive/Enabled Status
+bool DriveMK2 = false;  // Drive/Enabled Status
 int TopSpeed = 85;
 int ErwuenschteSpeed = 0;
+int ErwuenschteSpeedMK2 = 0;
 int regelDifferenz = 0;
 float rpm = 0;
 float raw = 0;
+bool Driving = false;
 
 AS5600 as5600;           //Sensor "erstellen"
 #define Trustfaktor 0.4  //Wie sehr wir den Sensorwerten vertrauen. 0,5 viel. 0,1 langsam
@@ -48,6 +52,21 @@ int frameIndex = 0;
 bool receivingFrame = false;
 
 //--------------------------------------------------------
+// Variablen und const's für Empfangen der PPM Daten
+
+PPMReader ppm(3, 7);  // Pin 3, 7 Kanäle
+const int PPM_MIN = 1012; 
+const int PPM_MAX = 2024; 
+
+const byte STICK_CHANNELS = 4;        // nur Kanäle mit Rauschen prüfen
+const unsigned long FREEZE_MS = 500;  // so lange identisch = Failsafe
+unsigned lastVal[STICK_CHANNELS + 1];
+unsigned long lastChange = 0;
+
+const int NUM_CHANNELS_SECOND = 7;  //Channels welche Empfangen werden sollen
+int channels_second[NUM_CHANNELS_SECOND];
+
+//--------------------------------------------------------
 
 int applyDeadzone(int value, int dz) {
   return (abs(value) < dz) ? 0 : value;
@@ -55,6 +74,8 @@ int applyDeadzone(int value, int dz) {
 
 void setup() {
   Serial.begin(250000);
+  ppm.minChannelValue = 900;
+  ppm.maxChannelValue = 2100;
   Wire.begin();  // muss bei neueren Versionen selbst aufgerufen werden
   Wire.setClock(400000);
   as5600.begin();
@@ -86,6 +107,8 @@ void setup() {
 void loop() {
   t_neu = millis();
   ReadSerial();
+  ReadPPM();
+  ChannellogicMK2();
   Channellogic();
   Fahren();
   if (Debug) printDebugInfo();
@@ -106,6 +129,7 @@ void Fahren() {
 
 void printDebugInfo() {
   if (millis() - lastDebugTime > intervall) {
+
     lastDebugTime = millis();
     if (failsafeActive) {
       Serial.print(" [!] - Fallback: ");
@@ -117,6 +141,15 @@ void printDebugInfo() {
       Serial.print(channels[i]);
       if (i < NUM_CHANNELS - 1) Serial.print(",");
     }
+    if (checkforFailsave()) {
+      Serial.print(" [!] PPM Failsave");
+    } else {
+      Serial.print(" PPM Channels: ");
+      for (int i = 0; i < NUM_CHANNELS_SECOND; i++) {
+        Serial.print(channels_second[i]);
+        if (i < NUM_CHANNELS_SECOND - 1) Serial.print(",");
+      }
+    }
     Serial.print("  RPM");
     Serial.print(rpm);
     Serial.print("  Gas");
@@ -125,24 +158,32 @@ void printDebugInfo() {
     Serial.print(Pr);
     Serial.print("  IFaktor");
     Serial.print(Ir);
+
     Serial.println();
   }
 }
 
 void Channellogic() {
-  ErwuenschteSpeed = map(channels[1], 0, 1000, -TopSpeed, TopSpeed);
-  ErwuenschteSpeed = applyDeadzone(ErwuenschteSpeed, TopSpeed * 0.1);
+  if (channels[4] < 500) Drive = true;
+  else Drive = false;
 
-  if (channels[4] < 500) {
-    Drive = 1;
-  } else {
-    Drive = 0;
+  int stick = 500;
+  if (Drive == true) stick = channels[1];  // Serial
+  else if(DriveMK2 == true)stick = channels_second[1];      // PPM
+  ErwuenschteSpeed = map(stick, 0, 1000, -TopSpeed, TopSpeed);
+  ErwuenschteSpeed = applyDeadzone(ErwuenschteSpeed, TopSpeed * 0.15);
+}
+
+void ChannellogicMK2() {
+  if(channels_second[5]<550){
+    DriveMK2 = true;
   }
+  else DriveMK2 = false;
 }
 
 void Motor() {
-
-  if (Drive == 1) {
+  if (Drive == true || (DriveMK2 && !checkforFailsave())) {
+    Driving = true;
     if (Gas != 0) {
       if (Gas > 0) {
         analogWrite(PinDriverF, Gas);
@@ -161,6 +202,7 @@ void Motor() {
   } else {
     analogWrite(PinDriverF, 0);
     analogWrite(PinDriverR, 0);
+    Driving = false;
   }
 }
 
@@ -179,7 +221,7 @@ void CalculateP() {
 }
 
 void CalculateI() {
-  if (Drive == 0 || ErwuenschteSpeed == 0) summe = 0;
+  if (Driving == false || ErwuenschteSpeed == 0) summe = 0;
   float dt = (t_neu - t_alt) / 1000.0;
   summe += regelDifferenz * dt;
   summe = constrain(summe, -255.0 / IFaktor, 255.0 / IFaktor);
@@ -199,6 +241,29 @@ void activateFailsafe() {
   channels[3] = 500;
   channels[4] = 1000;
   channels[5] = 1000;
+}
+
+bool checkforFailsave() {
+  for (byte ch = 1; ch <= STICK_CHANNELS; ch++) {
+    unsigned v = ppm.latestValidChannelValue(ch, 0);
+    if (v != lastVal[ch]) {
+      lastVal[ch] = v;
+      lastChange = millis();
+    }
+  }
+  bool failsafe = (millis() - lastChange > FREEZE_MS) || lastVal[1] == 0;  // 0 = gar kein PPM-Signal
+  if (failsafe) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void ReadPPM() {
+  for (byte i = 0; i < NUM_CHANNELS_SECOND; i++) {
+    unsigned us = ppm.latestValidChannelValue(i + 1, 1500);
+    channels_second[i] = constrain(map(us, PPM_MIN, PPM_MAX, 0, 1000), 0, 1000);
+  }
 }
 
 //--------------------------------------------------------
