@@ -7,7 +7,7 @@
 #define PinDriverR 6  //Pin für die Motortreiber PWM Rückwerts
 
 #define intervall 100  //Intervall für die Debug ausgabe
-#define Debug false    //Debug Ausgabe an/aus
+#define Debug true     //Debug Ausgabe an/aus
 
 //--------------------------------------------------------
 bool Drive = false;     // Drive/Enabled Status
@@ -16,18 +16,21 @@ int TopSpeed = 85;
 int ErwuenschteSpeed = 0;
 int ErwuenschteSpeedMK2 = 0;
 int regelDifferenz = 0;
+int turning = 0;
+int Tempomat = 0;
+bool Tempomatfreigabe = false;
 float rpm = 0;
 float raw = 0;
 bool Driving = false;
 bool Cruser = false;
 
 AS5600 as5600;           //Sensor "erstellen"
-#define Trustfaktor 0.4  //Wie sehr wir den Sensorwerten vertrauen. 0,5 viel. 0,1 langsam
+#define Trustfaktor 0.1  //Wie sehr wir den Sensorwerten vertrauen. 0,5 viel. 0,1 langsam
 //--------------------------------------------------------
 // Faktoren hier zum Tunen ändern
 float PFaktor = 5;
 float IFaktor = 7;
-float FFaktor = 1.4;
+float FFaktor = 1.6;
 //--------------------------------------------------------
 
 int Gas = 0;
@@ -98,11 +101,12 @@ void setup() {
     digitalWrite(LED_BUILTIN, 1);
     delay(500);
     digitalWrite(LED_BUILTIN, 0);
-    delay(500);
+    delay(50);
   }
   //--------------------------------------------------------
 
   lastPacketTime = millis();
+  delay(100);
 }
 
 void loop() {
@@ -169,27 +173,38 @@ void Channellogic() {
   else Drive = false;
 
   int stick = 500;
-  if (Drive == true) stick = channels[0];                 // Serial
-  else if (DriveMK2 == true) stick = channels_second[2];  // PPM
+  if (Drive == true) stick = channels[0];                    // Serial
+  else if (DriveMK2 && !Cruser) stick = channels_second[2];  // PPM
+  if (DriveMK2 && Cruser) {
+    if (channels_second[0] < 470) {
+      turning = map(channels_second[0], 0, 470, -1000, 0);
+    } else {
+      turning = 0;
+    }
+    if (channels_second[4] < 140 && Tempomatfreigabe) {
+      Tempomat = map(channels_second[4], 140, 10, 0, 500);
+    } else Tempomat = 0;
+    stick = channels_second[2] + turning + Tempomat;
+  }
+
   ErwuenschteSpeed = map(stick, 0, 1000, -TopSpeed, TopSpeed);
-  ErwuenschteSpeed = applyDeadzone(ErwuenschteSpeed, TopSpeed * 0.15);
+  ErwuenschteSpeed = applyDeadzone(ErwuenschteSpeed, TopSpeed * 0.1);
 }
 
 void ChannellogicMK2() {
-  channels_second[5] = map(channels_second[5], 0, 1000, 1, 3);
-  if (channels_second[5] == 3) {
+  channels_second[5] = constrain(map(channels_second[5], 200, 750, 1, 3), 1, 3);
+  if (channels_second[5] == 3) {  //Falls der Mode Switcher auf OFF Steht
     DriveMK2 = false;
     Cruser = false;
+    Tempomatfreigabe = false;
   } else DriveMK2 = true;
-  if (channels_second[5] == 2) {
+  if (channels_second[5] == 2) {  // Direct Controll der Ketten
     Cruser = false;
+    Tempomatfreigabe = false;
   }
-  if (channels_second[5] == 2) {
+  if (channels_second[5] == 1) {
     Cruser = true;
-  }
-
-  if(Cruser){
-    
+    if (!Tempomatfreigabe && channels_second[4] > 140) Tempomatfreigabe = true;  // Freigabe des Tempomats damit man nicht beim Modi umschalten direkt vollgas geben kann
   }
 }
 
@@ -251,7 +266,7 @@ void activateFailsafe() {
   channels[1] = 500;
   channels[2] = 500;
   channels[3] = 500;
-  channels[4] = 0;
+  channels[4] = 1000;
   channels[5] = 1000;
 }
 
