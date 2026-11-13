@@ -7,7 +7,7 @@
 #define PinDriverR 6  //Pin für die Motortreiber PWM Rückwerts
 
 #define intervall 100  //Intervall für die Debug ausgabe
-#define Debug true     //Debug Ausgabe an/aus
+#define Debug false     //Debug Ausgabe an/aus
 
 //--------------------------------------------------------
 bool Drive = false;     // Drive/Enabled Status
