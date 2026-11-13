@@ -164,8 +164,6 @@ void printDebugInfo() {
 }
 
 void Channellogic() {
-  channels[4] = map(channels[4],0,1000,0,3);
-
   if (channels[4] < 500) Drive = true;
   else Drive = false;
 
