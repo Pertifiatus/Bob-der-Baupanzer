@@ -7,10 +7,10 @@
 #define PinDriverR 6  //Pin für die Motortreiber PWM Rückwerts
 
 #define intervall 100  //Intervall für die Debug ausgabe
-#define Debug false     //Debug Ausgabe an/aus
+#define Debug false    //Debug Ausgabe an/aus
 
 //--------------------------------------------------------
-bool Drive = false;  // Drive/Enabled Status
+bool Drive = false;     // Drive/Enabled Status
 bool DriveMK2 = false;  // Drive/Enabled Status
 int TopSpeed = 85;
 int ErwuenschteSpeed = 0;
@@ -19,6 +19,7 @@ int regelDifferenz = 0;
 float rpm = 0;
 float raw = 0;
 bool Driving = false;
+bool Cruser = false;
 
 AS5600 as5600;           //Sensor "erstellen"
 #define Trustfaktor 0.4  //Wie sehr wir den Sensorwerten vertrauen. 0,5 viel. 0,1 langsam
@@ -55,8 +56,8 @@ bool receivingFrame = false;
 // Variablen und const's für Empfangen der PPM Daten
 
 PPMReader ppm(3, 7);  // Pin 3, 7 Kanäle
-const int PPM_MIN = 1012; 
-const int PPM_MAX = 2024; 
+const int PPM_MIN = 1012;
+const int PPM_MAX = 2024;
 
 const byte STICK_CHANNELS = 4;        // nur Kanäle mit Rauschen prüfen
 const unsigned long FREEZE_MS = 500;  // so lange identisch = Failsafe
@@ -168,17 +169,28 @@ void Channellogic() {
   else Drive = false;
 
   int stick = 500;
-  if (Drive == true) stick = channels[0];  // Serial
-  else if(DriveMK2 == true)stick = channels_second[2];      // PPM
+  if (Drive == true) stick = channels[0];                 // Serial
+  else if (DriveMK2 == true) stick = channels_second[2];  // PPM
   ErwuenschteSpeed = map(stick, 0, 1000, -TopSpeed, TopSpeed);
   ErwuenschteSpeed = applyDeadzone(ErwuenschteSpeed, TopSpeed * 0.15);
 }
 
 void ChannellogicMK2() {
-  if(channels_second[5]<550){
-    DriveMK2 = true;
+  channels_second[5] = map(channels_second[5], 0, 1000, 1, 3);
+  if (channels_second[5] == 3) {
+    DriveMK2 = false;
+    Cruser = false;
+  } else DriveMK2 = true;
+  if (channels_second[5] == 2) {
+    Cruser = false;
   }
-  else DriveMK2 = false;
+  if (channels_second[5] == 2) {
+    Cruser = true;
+  }
+
+  if(Cruser){
+    
+  }
 }
 
 void Motor() {
@@ -239,7 +251,7 @@ void activateFailsafe() {
   channels[1] = 500;
   channels[2] = 500;
   channels[3] = 500;
-  channels[4] = 1000;
+  channels[4] = 0;
   channels[5] = 1000;
 }
 
