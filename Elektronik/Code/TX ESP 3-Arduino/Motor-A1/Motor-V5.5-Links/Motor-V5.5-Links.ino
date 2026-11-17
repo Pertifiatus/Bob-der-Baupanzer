@@ -178,16 +178,20 @@ void Channellogic() {
   if (Drive) stick = channels[0];                            // Serial
   else if (DriveMK2 && !Cruser) stick = channels_second[2];  // PPM
   if (DriveMK2 && Cruser && !Drive) {
-    if (channels_second[0] < 470) {
-      turning = map(channels_second[0], 0, 470, -1000, 0);
-    } else {
-      turning = 0;
-    }
+    int turnL = 0;
+    int turnR = 0;
+    if (channels_second[0] < 470) turnL = map(channels_second[0], 0, 470, -1000, 0);
+    if (channels_second[0] > 530) turnR = map(channels_second[0], 530, 1000, 0, -1000);
     if (channels_second[4] < 140 && Tempomatfreigabe) {  // Tempomat
       Tempomat = map(channels_second[4], 140, 10, 0, 500);
     } else Tempomat = 0;
-    stick = channels_second[2] + turning + Tempomat;
-    stick = constrain(stick, 0, 1000);
+    int basis = constrain(channels_second[2] + Tempomat, 0, 1000);
+    int stickL = basis + turnL;
+    int stickR = basis + turnR;
+    int korrektur = 0;
+    if (min(stickL, stickR) < 0) korrektur = -min(stickL, stickR);
+    if (max(stickL, stickR) > 1000) korrektur = 1000 - max(stickL, stickR);
+    stick = constrain(stickL + korrektur, 0, 1000);
   }
 
   ErwuenschteSpeed = map(stick, 0, 1000, -TopSpeed, TopSpeed);
