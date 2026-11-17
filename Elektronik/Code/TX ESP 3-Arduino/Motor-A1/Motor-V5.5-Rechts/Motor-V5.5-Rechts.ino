@@ -7,7 +7,7 @@
 #define PinDriverR 6  //Pin für die Motortreiber PWM Rückwerts
 
 #define intervall 100  //Intervall für die Debug ausgabe
-#define Debug false     //Debug Ausgabe an/aus
+#define Debug false    //Debug Ausgabe an/aus
 
 //--------------------------------------------------------
 bool Drive = false;     // Drive/Enabled Status
@@ -23,6 +23,7 @@ float rpm = 0;
 float raw = 0;
 bool Driving = false;
 bool Cruser = false;
+bool sensorOK = true;
 
 AS5600 as5600;           //Sensor "erstellen"
 #define Trustfaktor 0.1  //Wie sehr wir den Sensorwerten vertrauen. 0,5 viel. 0,1 langsam
@@ -81,7 +82,7 @@ void setup() {
   ppm.minChannelValue = 900;
   ppm.maxChannelValue = 2100;
   Wire.begin();  // muss bei neueren Versionen selbst aufgerufen werden
-  Wire.setClock(400000);
+  Wire.setClock(100000);
   as5600.begin();
   as5600.setDirection(AS5600_CLOCK_WISE);
   //--------------------------------------------------------
@@ -107,6 +108,7 @@ void setup() {
 
   lastPacketTime = millis();
   delay(100);
+  t_alt = millis();
 }
 
 void loop() {
@@ -173,18 +175,19 @@ void Channellogic() {
   else Drive = false;
 
   int stick = 500;
-  if (Drive == true) stick = channels[1];                    // Serial
+  if (Drive) stick = channels[1];                            // Serial
   else if (DriveMK2 && !Cruser) stick = channels_second[1];  // PPM
-  if (DriveMK2 && Cruser) {
+  if (DriveMK2 && Cruser && !Drive) {
     if (channels_second[0] > 530) {
       turning = map(channels_second[0], 530, 1000, 0, -1000);
     } else {
       turning = 0;
     }
-    if (channels_second[4] < 140 && Tempomatfreigabe) {
+    if (channels_second[4] < 140 && Tempomatfreigabe) {  // Tempomat
       Tempomat = map(channels_second[4], 140, 10, 0, 500);
     } else Tempomat = 0;
     stick = channels_second[2] + turning + Tempomat;
+    stick = constrain(stick, 0, 1000);
   }
 
   ErwuenschteSpeed = map(stick, 0, 1000, -TopSpeed, TopSpeed);
@@ -209,7 +212,7 @@ void ChannellogicMK2() {
 }
 
 void Motor() {
-  if (Drive == true || (DriveMK2 && !checkforFailsave())) {
+  if (sensorOK && (Drive || (DriveMK2 && !checkforFailsave()))) {
     Driving = true;
     if (Gas != 0) {
       if (Gas > 0) {
@@ -240,6 +243,11 @@ void ReadRPM() {
   if (millis() - last < 10) return;  // feste 10 ms Abtastung
   last = millis();
   raw = as5600.getAngularSpeed(AS5600_MODE_RPM);
+  if (isnan(raw)) {  // I2C-Fehler oder Sensor weg
+    sensorOK = false;
+    return;  // rpm NICHT anfassen
+  }
+  sensorOK = true;
   rpm = (1 - Trustfaktor) * rpm + Trustfaktor * raw;  // Tiefpassfilter
 }
 
